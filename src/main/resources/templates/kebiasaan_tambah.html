@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  lang="en"
+  x-data="dashboard()"
+  x-init="init()"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tambah Kebiasaan | HabitTracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+  </head>
+  <body class="min-h-screen bg-gray-100 flex relative overflow-hidden">
+    <!-- Sidebar -->
+    <aside
+      class="bg-white w-64 min-h-screen shadow-xl px-6 py-4 space-y-6 absolute md:relative z-30 transition-transform duration-200 ease-in-out"
+      :class="isMobile ? (sidebarOpen ? 'translate-x-0' : '-translate-x-full') : ''"
+    >
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold text-[#6700A3] mb-4">Dashboard</h2>
+        <button class="md:hidden" @click="sidebarOpen = false">✕</button>
+      </div>
+
+      <nav class="flex flex-col space-y-2">
+        <a href="/home" class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Home</a
+        >
+        <a href="#" class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Kebiasaan</a
+        >
+        <a href="#" class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Tugas</a
+        >
+        <a href="#" class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Progress</a
+        >
+        <div
+          class="mt-8 flex justify-center relative"
+          x-data="{ openMenu: false }"
+        >
+          <button
+            @click="openMenu = !openMenu"
+            class="bg-[#6700A3] text-white px-5 py-3 rounded-full text-sm font-semibold shadow hover:bg-[#52007f] transition"
+          >
+            + Tambah
+          </button>
+          <div
+            x-show="openMenu"
+            @click.away="openMenu = false"
+            x-transition
+            class="absolute top-full mt-2 bg-white border border-gray-200 rounded shadow w-48 z-50"
+          >
+            <a
+              href="/kebiasaan/tambah"
+              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >Tambah Kebiasaan</a
+            >
+            <a
+              href="/tugas/tambah"
+              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >Tambah Tugas</a
+            >
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Overlay -->
+    <div
+      class="fixed inset-0 bg-black bg-opacity-40 z-20 md:hidden"
+      x-show="sidebarOpen"
+      @click="sidebarOpen = false"
+    ></div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col z-10">
+      <!-- Top Navbar -->
+      <header
+        class="bg-white shadow px-6 py-4 flex justify-between items-center"
+      >
+        <button
+          @click="sidebarOpen = !sidebarOpen"
+          class="md:hidden text-gray-700"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+        <h1 class="text-xl font-bold text-[#6700A3]">HabitTracker</h1>
+        <div class="space-x-4">
+          <span class="text-gray-600"
+            >Halo, <b th:text="${username}">User</b></span
+          >
+          <a href="/logout" class="text-red-500 hover:text-red-700">Logout</a>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="p-6 bg-gray-100 flex-1 overflow-y-auto">
+        <h2 class="text-2xl font-bold text-[#6700A3] mb-4">Tambah Kebiasaan</h2>
+        <form
+          th:action="@{/kebiasaan/tambah}"
+          method="post"
+          class="bg-white p-6 rounded shadow space-y-4 max-w-lg"
+          x-data="kebiasaanForm()"
+        >
+          <div class="mb-4">
+            <label class="block mb-1 font-medium text-gray-700"
+              >Pilih Template Kebiasaan</label
+            >
+            <div class="flex flex-wrap gap-2">
+              <template x-for="item in dummyKebiasaan" :key="item">
+                <button
+                  type="button"
+                  @click="namaKebiasaan = item"
+                  class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded"
+                >
+                  <span x-text="item"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+          <!-- Nama -->
+          <div>
+            <label class="block mb-1 font-medium text-gray-700"
+              >Nama Kebiasaan</label
+            >
+            <input
+              type="text"
+              name="nama"
+              x-model="namaKebiasaan"
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2"
+            />
+          </div>
+          <!-- Frekuensi -->
+          <div>
+            <label class="block mb-1 font-medium text-gray-700"
+              >Frekuensi</label
+            >
+            <select
+              name="frekuensi"
+              x-model="frekuensi"
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2"
+            >
+              <option value="">Pilih Frekuensi</option>
+              <option value="Harian">Harian</option>
+              <option value="Mingguan">Mingguan</option>
+              <option value="Bulanan">Bulanan</option>
+            </select>
+          </div>
+          <!-- Tanggal -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block mb-1 font-medium text-gray-700"
+                >Tanggal Mulai</label
+              >
+              <input
+                type="date"
+                name="tanggalMulai"
+                x-model="tanggalMulai"
+                required
+                class="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+            <div>
+              <label class="block mb-1 font-medium text-gray-700"
+                >Tanggal Selesai</label
+              >
+              <input
+                type="date"
+                name="tanggalSelesai"
+                x-model="tanggalSelesai"
+                class="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+          </div>
+          <!-- Waktu -->
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Waktu</label>
+            <input
+              type="time"
+              name="waktu"
+              x-model="waktu"
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2"
+            />
+          </div>
+          <button
+            type="submit"
+            class="bg-[#6700A3] text-white px-4 py-2 rounded hover:bg-[#52007f] transition"
+          >
+            Simpan
+          </button>
+        </form>
+      </main>
+    </div>
+
+    <!-- Alpine.js Dashboard Logic -->
+    <script>
+      function dashboard() {
+        return {
+          sidebarOpen: false,
+          isMobile: window.innerWidth < 768,
+          init() {
+            window.addEventListener("resize", () => {
+              this.isMobile = window.innerWidth < 768;
+              if (!this.isMobile) this.sidebarOpen = true;
+            });
+            if (!this.isMobile) this.sidebarOpen = true;
+          },
+        };
+      }
+    </script>
+
+    <!-- Alpine.js Form Logic -->
+    <script>
+      function kebiasaanForm() {
+        return {
+          namaKebiasaan: "",
+          frekuensi: "",
+          tanggalMulai: "",
+          tanggalSelesai: "",
+          waktu: "",
+          dummyKebiasaan: [
+            "Minum Air 2L",
+            "Olahraga 30 Menit",
+            "Meditasi",
+            "Membaca Buku",
+            "Tidur Tepat Waktu",
+          ],
+        };
+      }
+    </script>
+  </body>
+</html>

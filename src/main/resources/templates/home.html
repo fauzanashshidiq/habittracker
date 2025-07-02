@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  lang="en"
+  x-data="{ sidebarOpen: false, isMobile: window.innerWidth < 768 }"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home | HabitTracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+  </head>
+  <body class="min-h-screen bg-gray-100 flex relative overflow-hidden">
+    <!-- Sidebar -->
+    <aside
+      class="bg-white w-64 min-h-screen shadow-xl px-6 py-4 space-y-6 absolute md:relative z-30 transition-transform duration-200 ease-in-out"
+      :class="isMobile ? (sidebarOpen ? 'translate-x-0' : '-translate-x-full') : ''"
+    >
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold text-[#6700A3] mb-4">Dashboard</h2>
+        <button class="md:hidden" @click="sidebarOpen = false">✕</button>
+      </div>
+
+      <nav class="flex flex-col space-y-2">
+        <a
+          th:href="@{/home}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Home</a
+        >
+        <a href="#" class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Kebiasaan</a
+        >
+        <a href="#" class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Tugas</a
+        >
+        <a href="#" class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Progress</a
+        >
+        <div
+          class="mt-8 flex justify-center relative"
+          x-data="{ openMenu: false }"
+        >
+          <button
+            @click="openMenu = !openMenu"
+            class="bg-[#6700A3] text-white px-5 py-3 rounded-full text-sm font-semibold shadow hover:bg-[#52007f] transition"
+          >
+            + Tambah
+          </button>
+          <div
+            x-show="openMenu"
+            @click.away="openMenu = false"
+            x-transition
+            class="absolute top-full mt-2 bg-white border border-gray-200 rounded shadow w-48 z-50"
+          >
+            <a
+              href="/kebiasaan/tambah"
+              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            >
+              Tambah Kebiasaan
+            </a>
+            <a
+              href="/tugas/tambah"
+              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            >
+              Tambah Tugas
+            </a>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Overlay -->
+    <div
+      class="fixed inset-0 bg-black bg-opacity-40 z-20 md:hidden"
+      x-show="sidebarOpen"
+      @click="sidebarOpen = false"
+    ></div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col z-10">
+      <!-- Top Navbar -->
+      <header
+        class="bg-white shadow px-6 py-4 flex justify-between items-center"
+      >
+        <button
+          @click="sidebarOpen = !sidebarOpen"
+          class="md:hidden text-gray-700"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+        <h1 class="text-xl font-bold text-[#6700A3]">HabitTracker</h1>
+        <div class="space-x-4">
+          <span class="text-gray-600">
+            Halo, <b th:text="${username}">User</b>
+          </span>
+          <a href="/logout" class="text-red-500 hover:text-red-700">Logout</a>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="p-6 bg-gray-100 flex-1 overflow-y-auto">
+        <!-- Tanggal hari ini -->
+        <section class="mb-6">
+          <h2 class="text-lg font-semibold text-gray-700 mb-2">Hari Ini</h2>
+          <p class="text-gray-600">
+            Tanggal: <span th:text="${selectedDate}"></span>
+          </p>
+        </section>
+
+        <!-- Kebiasaan -->
+        <section class="mb-8">
+          <h3 class="text-lg font-semibold text-[#6700A3] mb-2">Kebiasaan</h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div
+              th:each="habit : ${habits}"
+              class="bg-white p-4 rounded shadow hover:shadow-lg"
+            >
+              <h4 class="font-bold text-gray-800" th:text="${habit.nama}"></h4>
+              <p class="text-sm text-gray-500">
+                Frekuensi: <span th:text="${habit.frekuensi}"></span>
+              </p>
+            </div>
+            <div th:if="${#lists.isEmpty(habits)}" class="text-gray-500">
+              Tidak ada kebiasaan.
+            </div>
+          </div>
+        </section>
+
+        <!-- Tugas -->
+        <section>
+          <h3 class="text-lg font-semibold text-[#6700A3] mb-2">Tugas</h3>
+          <ul class="space-y-2">
+            <li
+              th:each="task : ${tasks}"
+              class="bg-white p-3 rounded shadow hover:shadow-md"
+            >
+              <span class="font-medium" th:text="${task.judul}"></span>
+              <span class="block text-sm text-gray-500">
+                Deadline: <span th:text="${task.tanggalDeadline}"></span>
+              </span>
+            </li>
+            <li th:if="${#lists.isEmpty(tasks)}" class="text-gray-500">
+              Tidak ada tugas.
+            </li>
+          </ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
