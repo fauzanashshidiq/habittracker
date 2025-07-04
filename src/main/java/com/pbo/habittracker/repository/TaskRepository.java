@@ -9,5 +9,6 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByUserUsername(String username);
     List<Task> findByUserUsernameAndTanggalDeadline(String username, LocalDate tanggalDeadline);
+    List<Task> findByTanggalDeadline(LocalDate tanggal);
 }
 

@@ -3,6 +3,11 @@ package com.pbo.habittracker.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 public class Habit {
@@ -11,13 +16,12 @@ public class Habit {
     private Long id;
 
     private String nama;
-    private String frekuensi; // Harian, Mingguan, Bulanan
+    private String frekuensi;
 
     private LocalDate tanggalMulai;
     private LocalDate tanggalSelesai;
     private LocalTime waktu;
 
-    // Relasi ke User kalau mau (optional)
     @ManyToOne
     private User user;
 
@@ -65,4 +69,8 @@ public class Habit {
     }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
+    @OneToMany(mappedBy = "habit", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<HabitCompletion> completions = new ArrayList<>();
+
 }

@@ -4,6 +4,9 @@ import com.pbo.habittracker.model.Habit;
 import com.pbo.habittracker.model.User;
 import com.pbo.habittracker.repository.HabitRepository;
 import com.pbo.habittracker.repository.UserRepository;
+import com.pbo.habittracker.service.HabitService;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,17 +21,19 @@ public class HabitController {
 
     private final HabitRepository habitRepository;
     private final UserRepository userRepository;
+     private final HabitService habitService;
 
-    // Constructor injection untuk kedua repository
-    public HabitController(HabitRepository habitRepository, UserRepository userRepository) {
+    public HabitController(HabitRepository habitRepository, UserRepository userRepository, HabitService habitService) {
         this.habitRepository = habitRepository;
         this.userRepository = userRepository;
+        this.habitService = habitService;
     }
 
     @GetMapping("/tambah")
     public String formTambah(Model model, Principal principal) {
         model.addAttribute("username", principal.getName());
-        return "kebiasaan_tambah";
+        model.addAttribute("habit", new Habit());
+        return "form_habit";
     }
 
     @PostMapping("/tambah")
@@ -38,7 +43,7 @@ public class HabitController {
             @RequestParam String tanggalMulai,
             @RequestParam(required = false) String tanggalSelesai,
             @RequestParam String waktu,
-            Principal principal // 🟢 INI UNTUK AMBIL USER LOGIN
+            Principal principal
     ) {
         Habit h = new Habit();
         h.setNama(nama);
@@ -62,4 +67,48 @@ public class HabitController {
 
         return "redirect:/home";
     }
+
+
+    @GetMapping("/edit/{id}")
+public String editHabitForm(@PathVariable Long id, Model model, Principal principal) {
+    
+    model.addAttribute("username", principal.getName());
+    Habit habit = habitRepository.findById(id).orElse(null);
+    if (habit == null) {
+        return "redirect:/home";
+    }
+    model.addAttribute("habit", habit);
+    return "form_habit";
+}
+
+
+@PostMapping("/update/{id}")
+public String updateHabit(@PathVariable Long id, @ModelAttribute Habit habitBaru) {
+    Habit h = habitRepository.findById(id).orElseThrow();
+    h.setNama(habitBaru.getNama());
+    h.setFrekuensi(habitBaru.getFrekuensi());
+    h.setTanggalMulai(habitBaru.getTanggalMulai());
+    h.setTanggalSelesai(habitBaru.getTanggalSelesai());
+    h.setWaktu(habitBaru.getWaktu());
+    habitRepository.save(h);
+    return "redirect:/home";
+}
+
+@PostMapping("hapus/{id}")
+public String deleteHabit(
+        @PathVariable Long id,
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+        Principal principal
+) {
+    Habit habit = habitService.findById(id);
+    if (habit == null || !habit.getUser().getUsername().equals(principal.getName())) {
+        throw new RuntimeException("Habit tidak ditemukan atau bukan milik Anda.");
+    }
+
+    habitService.deleteHabit(habit);
+    return "redirect:/home?date=" + date + "&start=" + start;
+}
+
+
 }

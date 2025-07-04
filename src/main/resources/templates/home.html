@@ -1,30 +1,42 @@
 <!DOCTYPE html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  lang="en"
-  x-data="{ sidebarOpen: false, isMobile: window.innerWidth < 768 }"
->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home | HabitTracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script
-      defer
-      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
+    <style>
+      .today-indicator {
+        position: relative;
+      }
+      .today-indicator::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 6px;
+        height: 6px;
+        background-color: white;
+        border-radius: 9999px;
+      }
+    </style>
   </head>
-  <body class="min-h-screen bg-gray-100 flex relative overflow-hidden">
+  <body class="min-h-screen bg-gray-100 flex relative">
     <!-- Sidebar -->
     <aside
       class="bg-white w-64 min-h-screen shadow-xl px-6 py-4 space-y-6 absolute md:relative z-30 transition-transform duration-200 ease-in-out"
-      :class="isMobile ? (sidebarOpen ? 'translate-x-0' : '-translate-x-full') : ''"
+      th:classappend="${sidebarOpen} ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'"
     >
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-[#6700A3] mb-4">Dashboard</h2>
-        <button class="md:hidden" @click="sidebarOpen = false">✕</button>
+        <button
+          class="md:hidden"
+          onclick="document.getElementById('sidebarOverlay').click()"
+        >
+          ✕
+        </button>
       </div>
-
       <nav class="flex flex-col space-y-2">
         <a
           th:href="@{/home}"
@@ -40,21 +52,16 @@
         <a href="#" class="text-gray-700 hover:text-[#E02F75] font-medium"
           >Progress</a
         >
-        <div
-          class="mt-8 flex justify-center relative"
-          x-data="{ openMenu: false }"
-        >
+        <div class="mt-8 flex justify-center relative">
           <button
-            @click="openMenu = !openMenu"
+            onclick="document.getElementById('addMenu').classList.toggle('hidden')"
             class="bg-[#6700A3] text-white px-5 py-3 rounded-full text-sm font-semibold shadow hover:bg-[#52007f] transition"
           >
             + Tambah
           </button>
           <div
-            x-show="openMenu"
-            @click.away="openMenu = false"
-            x-transition
-            class="absolute top-full mt-2 bg-white border border-gray-200 rounded shadow w-48 z-50"
+            id="addMenu"
+            class="absolute top-full mt-2 bg-white border border-gray-200 rounded shadow w-48 hidden z-50"
           >
             <a
               href="/kebiasaan/tambah"
@@ -75,20 +82,20 @@
 
     <!-- Overlay -->
     <div
-      class="fixed inset-0 bg-black bg-opacity-40 z-20 md:hidden"
-      x-show="sidebarOpen"
-      @click="sidebarOpen = false"
+      id="sidebarOverlay"
+      class="fixed inset-0 bg-black bg-opacity-40 z-20 md:hidden hidden"
+      onclick="document.querySelector('aside').classList.add('-translate-x-full'); this.classList.add('hidden')"
     ></div>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col z-10">
+    <div class="flex-1 flex flex-col min-h-0 z-10">
       <!-- Top Navbar -->
       <header
         class="bg-white shadow px-6 py-4 flex justify-between items-center"
       >
         <button
-          @click="sidebarOpen = !sidebarOpen"
           class="md:hidden text-gray-700"
+          onclick="document.querySelector('aside').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden')"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -107,20 +114,59 @@
         </button>
         <h1 class="text-xl font-bold text-[#6700A3]">HabitTracker</h1>
         <div class="space-x-4">
-          <span class="text-gray-600">
-            Halo, <b th:text="${username}">User</b>
-          </span>
+          <span class="text-gray-600"
+            >Halo, <b th:text="${username}">User</b></span
+          >
           <a href="/logout" class="text-red-500 hover:text-red-700">Logout</a>
         </div>
       </header>
 
       <!-- Page Content -->
       <main class="p-6 bg-gray-100 flex-1 overflow-y-auto">
-        <!-- Tanggal hari ini -->
+        <!-- Navigasi Mingguan -->
         <section class="mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <a
+              th:href="@{/home(start=${prevWeek}, date=${selectedDate})}"
+              class="text-gray-600 hover:text-[#6700A3] px-2 py-1"
+            >
+              &larr; Sebelumnya
+            </a>
+            <h2 class="text-lg font-semibold text-gray-700">Pilih Tanggal</h2>
+            <a
+              th:href="@{/home(start=${nextWeek}, date=${selectedDate})}"
+              class="text-gray-600 hover:text-[#6700A3] px-2 py-1"
+            >
+              Berikutnya &rarr;
+            </a>
+          </div>
+
+          <div
+            class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 w-full"
+          >
+            <a
+              th:each="day : ${days}"
+              th:href="@{/home(date=${day}, start=${startDate})}"
+              th:text="${#temporals.format(day, 'dd/MM')}"
+              class="flex-shrink-0 px-4 py-2 relative rounded-md text-base font-semibold border border-gray-300 text-center transition duration-150"
+              th:classappend="
+              ${day} == ${selectedDate} ? ' bg-[#6700A3] text-white'
+              : (${day} < ${today} ? ' bg-gray-200 text-gray-700'
+              : (${day} == ${today} ? ' bg-gray-200 text-gray-700 today-indicator'
+              : ' bg-white text-gray-700 hover:bg-gray-100'))
+            "
+            ></a>
+          </div>
+        </section>
+
+        <!-- Tanggal hari ini -->
+        <section class="mb-4">
           <h2 class="text-lg font-semibold text-gray-700 mb-2">Hari Ini</h2>
           <p class="text-gray-600">
-            Tanggal: <span th:text="${selectedDate}"></span>
+            Tanggal:
+            <span th:text="${#temporals.format(selectedDate, 'dd MMMM yyyy')}"
+              >Tanggal</span
+            >
           </p>
         </section>
 
@@ -130,14 +176,71 @@
           <div class="grid md:grid-cols-2 gap-4">
             <div
               th:each="habit : ${habits}"
-              class="bg-white p-4 rounded shadow hover:shadow-lg"
+              class="bg-white p-4 rounded shadow hover:shadow-lg flex items-center justify-between"
             >
-              <h4 class="font-bold text-gray-800" th:text="${habit.nama}"></h4>
-              <p class="text-sm text-gray-500">
-                Frekuensi: <span th:text="${habit.frekuensi}"></span>
-              </p>
+              <div>
+                <h4 class="font-bold text-gray-800" th:text="${habit.nama}">
+                  Nama Kebiasaan
+                </h4>
+                <p class="text-sm text-gray-500">
+                  <span th:switch="${habit.frekuensi}">
+                    <span th:case="'Harian'">Harian</span>
+                    <span th:case="'Mingguan'"
+                      >Sisa
+                      <span th:text="${sisaMingguan[habit.id]}"></span>
+                      hari</span
+                    >
+                    <span th:case="'Bulanan'"
+                      >Sisa
+                      <span th:text="${sisaBulanan[habit.id]}"></span>
+                      hari</span
+                    >
+                    <span th:case="*"
+                      ><span th:text="${habit.frekuensi}"></span
+                    ></span>
+                  </span>
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <form
+                  th:action="@{/kebiasaan/selesai/{id}(id=${habit.id})}"
+                  method="post"
+                >
+                  <input type="hidden" name="date" th:value="${selectedDate}" />
+                  <input type="hidden" name="start" th:value="${startDate}" />
+                  <button
+                    type="submit"
+                    class="text-white px-3 py-1 rounded"
+                    th:classappend="${@habitCompletionService.isDoneOnDate(habit, selectedDate)} ? ' bg-yellow-500 hover:bg-yellow-600' : ' bg-green-500 hover:bg-green-600'"
+                    th:text="${@habitCompletionService.isDoneOnDate(habit, selectedDate)} ? '× Batal' : '✓ Selesai'"
+                  ></button>
+                </form>
+                <a
+                  th:href="@{/kebiasaan/edit/{id}(id=${habit.id})}"
+                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                >
+                  ✎ Edit
+                </a>
+                <form
+                  th:action="@{/kebiasaan/hapus/{id}(id=${habit.id})}"
+                  method="post"
+                  onsubmit="return confirm('Yakin ingin menghapus kebiasaan ini?');"
+                >
+                  <input type="hidden" name="date" th:value="${selectedDate}" />
+                  <input type="hidden" name="start" th:value="${startDate}" />
+                  <button
+                    type="submit"
+                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                  >
+                    🗑 Hapus
+                  </button>
+                </form>
+              </div>
             </div>
-            <div th:if="${#lists.isEmpty(habits)}" class="text-gray-500">
+            <div
+              th:if="${#lists.isEmpty(habits)}"
+              class="text-gray-500 col-span-2"
+            >
               Tidak ada kebiasaan.
             </div>
           </div>
@@ -151,9 +254,15 @@
               th:each="task : ${tasks}"
               class="bg-white p-3 rounded shadow hover:shadow-md"
             >
-              <span class="font-medium" th:text="${task.judul}"></span>
+              <span class="font-medium" th:text="${task.judul}"
+                >Judul Tugas</span
+              >
               <span class="block text-sm text-gray-500">
-                Deadline: <span th:text="${task.tanggalDeadline}"></span>
+                Deadline:
+                <span
+                  th:text="${#temporals.format(task.tanggalDeadline, 'dd MMM yyyy')}"
+                  >Tanggal</span
+                >
               </span>
             </li>
             <li th:if="${#lists.isEmpty(tasks)}" class="text-gray-500">

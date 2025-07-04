@@ -113,12 +113,25 @@
 
       <!-- Page Content -->
       <main class="p-6 bg-gray-100 flex-1 overflow-y-auto">
-        <h2 class="text-2xl font-bold text-[#6700A3] mb-4">Tambah Kebiasaan</h2>
+        <h2
+          class="text-2xl font-bold text-[#6700A3] mb-4"
+          th:text="${habit.id} != null ? 'Edit Kebiasaan' : 'Tambah Kebiasaan'"
+        >
+          Form Kebiasaan
+        </h2>
         <form
-          th:action="@{/kebiasaan/tambah}"
+          th:action="${habit.id} != null ?
+      @{/kebiasaan/update/{id}(id=${habit.id})} :
+      @{/kebiasaan/tambah}"
           method="post"
           class="bg-white p-6 rounded shadow space-y-4 max-w-lg"
-          x-data="kebiasaanForm()"
+          th:attr="x-data=|kebiasaanForm(
+    '${habit.nama != null ? habit.nama : ''}',
+    '${habit.frekuensi != null ? habit.frekuensi : ''}',
+    '${habit.tanggalMulai != null ? habit.tanggalMulai : ''}',
+    '${habit.tanggalSelesai != null ? habit.tanggalSelesai : ''}',
+    '${habit.waktu != null ? habit.waktu : ''}'
+  )|"
         >
           <div class="mb-4">
             <label class="block mb-1 font-medium text-gray-700"
@@ -205,9 +218,10 @@
           </div>
           <button
             type="submit"
+            th:text="${habit.id} != null ? 'Update' : 'Simpan'"
             class="bg-[#6700A3] text-white px-4 py-2 rounded hover:bg-[#52007f] transition"
           >
-            Simpan
+            Submit
           </button>
         </form>
       </main>
@@ -232,13 +246,19 @@
 
     <!-- Alpine.js Form Logic -->
     <script>
-      function kebiasaanForm() {
+      function kebiasaanForm(
+        namaDefault,
+        frekuensiDefault,
+        tanggalMulaiDefault,
+        tanggalSelesaiDefault,
+        waktuDefault
+      ) {
         return {
-          namaKebiasaan: "",
-          frekuensi: "",
-          tanggalMulai: "",
-          tanggalSelesai: "",
-          waktu: "",
+          namaKebiasaan: namaDefault,
+          frekuensi: frekuensiDefault,
+          tanggalMulai: tanggalMulaiDefault,
+          tanggalSelesai: tanggalSelesaiDefault,
+          waktu: waktuDefault,
           dummyKebiasaan: [
             "Minum Air 2L",
             "Olahraga 30 Menit",
