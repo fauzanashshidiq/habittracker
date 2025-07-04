@@ -72,7 +72,29 @@ public String home(
     String username = principal.getName();
 
     List<Habit> habits = habitService.getHabitsByUserAndDate(username, selectedDate);
-    List<Task> tasks = taskService.getTasksByUserAndDate(username, selectedDate);
+    List<Task> semuaTugas = taskService.findAllByUser(username);
+
+    LocalDate hariIni = LocalDate.now();
+
+    List<Task> overdueTasks = new ArrayList<>();
+    List<Task> hariIniTasks = new ArrayList<>();
+    List<Task> selectedDateTasks = new ArrayList<>();
+    List<Task> futureTasks = new ArrayList<>();
+
+    for (Task t : semuaTugas) {
+        if (t.getTanggalDeadline().isBefore(hariIni) && !t.isSelesai()) {
+            overdueTasks.add(t);
+        } 
+        if (t.getTanggalDeadline().isEqual(hariIni)) {
+            hariIniTasks.add(t);
+        }
+        if (t.getTanggalDeadline().isEqual(selectedDate)) {
+            selectedDateTasks.add(t);
+        }
+        if (t.getTanggalDeadline().isAfter(hariIni) && !t.isSelesai()) {
+            futureTasks.add(t);
+        }
+    }
 
     model.addAttribute("today", today);
     model.addAttribute("selectedDate", selectedDate);
@@ -81,7 +103,12 @@ public String home(
     model.addAttribute("nextWeek", startDate.plusDays(7));
     model.addAttribute("days", generate7Days(startDate));
     model.addAttribute("habits", habits);
-    model.addAttribute("tasks", tasks);
+    model.addAttribute("todayTasks", hariIniTasks);
+    model.addAttribute("selectedDateTasks", selectedDateTasks);
+    model.addAttribute("overdueTasks", overdueTasks);
+    model.addAttribute("futureTasks", futureTasks);
+    model.addAttribute("selectedDate", selectedDate);
+    model.addAttribute("today", hariIni);
     model.addAttribute("username", username);
 
     Map<Long, Long> sisaMingguan = new HashMap<>();

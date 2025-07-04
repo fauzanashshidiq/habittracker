@@ -10,5 +10,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByUserUsername(String username);
     List<Task> findByUserUsernameAndTanggalDeadline(String username, LocalDate tanggalDeadline);
     List<Task> findByTanggalDeadline(LocalDate tanggal);
+    List<Task> findByUserUsernameOrderByTanggalDeadlineAsc(String username);
 }
 

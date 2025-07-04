@@ -161,7 +161,9 @@
 
         <!-- Tanggal hari ini -->
         <section class="mb-4">
-          <h2 class="text-lg font-semibold text-gray-700 mb-2">Hari Ini</h2>
+          <h2 class="text-lg font-semibold text-gray-700 mb-2">
+            Tanggal Dipilih
+          </h2>
           <p class="text-gray-600">
             Tanggal:
             <span th:text="${#temporals.format(selectedDate, 'dd MMMM yyyy')}"
@@ -176,67 +178,70 @@
           <div class="grid md:grid-cols-2 gap-4">
             <div
               th:each="habit : ${habits}"
-              class="bg-white p-4 rounded shadow hover:shadow-lg flex items-center justify-between"
+              class="bg-white p-4 rounded shadow hover:shadow-lg flex items-center gap-4"
             >
-              <div>
+              <!-- Tombol Selesai -->
+              <form
+                th:action="@{/kebiasaan/selesai/{id}(id=${habit.id})}"
+                method="post"
+              >
+                <input type="hidden" name="date" th:value="${selectedDate}" />
+                <input type="hidden" name="start" th:value="${startDate}" />
+                <button
+                  type="submit"
+                  class="text-white px-3 py-1 rounded"
+                  th:classappend="${@habitCompletionService.isDoneOnDate(habit, selectedDate)} ? ' bg-yellow-500 hover:bg-yellow-600' : ' bg-green-500 hover:bg-green-600'"
+                  th:text="${@habitCompletionService.isDoneOnDate(habit, selectedDate)} ? '× Batal' : '✓ Selesai'"
+                ></button>
+              </form>
+
+              <!-- Nama dan Frekuensi -->
+              <div class="flex-1">
                 <h4 class="font-bold text-gray-800" th:text="${habit.nama}">
                   Nama Kebiasaan
                 </h4>
                 <p class="text-sm text-gray-500">
                   <span th:switch="${habit.frekuensi}">
                     <span th:case="'Harian'">Harian</span>
-                    <span th:case="'Mingguan'"
-                      >Sisa
-                      <span th:text="${sisaMingguan[habit.id]}"></span>
-                      hari</span
-                    >
-                    <span th:case="'Bulanan'"
-                      >Sisa
-                      <span th:text="${sisaBulanan[habit.id]}"></span>
-                      hari</span
-                    >
-                    <span th:case="*"
-                      ><span th:text="${habit.frekuensi}"></span
-                    ></span>
+                    <span th:case="'Mingguan'">
+                      Sisa
+                      <span th:text="${sisaMingguan[habit.id]}"></span> hari
+                    </span>
+                    <span th:case="'Bulanan'">
+                      Sisa <span th:text="${sisaBulanan[habit.id]}"></span> hari
+                    </span>
+                    <span th:case="*">
+                      <span th:text="${habit.frekuensi}"></span>
+                    </span>
                   </span>
                 </p>
               </div>
-              <div class="flex items-center gap-2">
-                <form
-                  th:action="@{/kebiasaan/selesai/{id}(id=${habit.id})}"
-                  method="post"
+
+              <!-- Edit -->
+              <a
+                th:href="@{/kebiasaan/edit/{id}(id=${habit.id})}"
+                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              >
+                ✎
+              </a>
+
+              <!-- Hapus -->
+              <form
+                th:action="@{/kebiasaan/hapus/{id}(id=${habit.id})}"
+                method="post"
+                onsubmit="return confirm('Yakin ingin menghapus kebiasaan ini?');"
+              >
+                <input type="hidden" name="date" th:value="${selectedDate}" />
+                <input type="hidden" name="start" th:value="${startDate}" />
+                <button
+                  type="submit"
+                  class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                 >
-                  <input type="hidden" name="date" th:value="${selectedDate}" />
-                  <input type="hidden" name="start" th:value="${startDate}" />
-                  <button
-                    type="submit"
-                    class="text-white px-3 py-1 rounded"
-                    th:classappend="${@habitCompletionService.isDoneOnDate(habit, selectedDate)} ? ' bg-yellow-500 hover:bg-yellow-600' : ' bg-green-500 hover:bg-green-600'"
-                    th:text="${@habitCompletionService.isDoneOnDate(habit, selectedDate)} ? '× Batal' : '✓ Selesai'"
-                  ></button>
-                </form>
-                <a
-                  th:href="@{/kebiasaan/edit/{id}(id=${habit.id})}"
-                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                >
-                  ✎ Edit
-                </a>
-                <form
-                  th:action="@{/kebiasaan/hapus/{id}(id=${habit.id})}"
-                  method="post"
-                  onsubmit="return confirm('Yakin ingin menghapus kebiasaan ini?');"
-                >
-                  <input type="hidden" name="date" th:value="${selectedDate}" />
-                  <input type="hidden" name="start" th:value="${startDate}" />
-                  <button
-                    type="submit"
-                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  >
-                    🗑 Hapus
-                  </button>
-                </form>
-              </div>
+                  🗑
+                </button>
+              </form>
             </div>
+
             <div
               th:if="${#lists.isEmpty(habits)}"
               class="text-gray-500 col-span-2"
@@ -249,26 +254,220 @@
         <!-- Tugas -->
         <section>
           <h3 class="text-lg font-semibold text-[#6700A3] mb-2">Tugas</h3>
-          <ul class="space-y-2">
-            <li
-              th:each="task : ${tasks}"
-              class="bg-white p-3 rounded shadow hover:shadow-md"
-            >
-              <span class="font-medium" th:text="${task.judul}"
-                >Judul Tugas</span
+
+          <!-- Overdue -->
+          <div th:if="${!#lists.isEmpty(overdueTasks)}" class="mb-4">
+            <h4 class="text-red-600 font-bold mb-2">⚠ Overdue</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div
+                th:each="task : ${overdueTasks}"
+                class="bg-white p-4 rounded shadow flex items-center gap-4"
               >
-              <span class="block text-sm text-gray-500">
-                Deadline:
-                <span
-                  th:text="${#temporals.format(task.tanggalDeadline, 'dd MMM yyyy')}"
-                  >Tanggal</span
+                <!-- Tombol -->
+                <form
+                  th:action="@{/tugas/selesai/{id}(id=${task.id})}"
+                  method="post"
                 >
-              </span>
-            </li>
-            <li th:if="${#lists.isEmpty(tasks)}" class="text-gray-500">
-              Tidak ada tugas.
-            </li>
-          </ul>
+                  <input type="hidden" name="date" th:value="${selectedDate}" />
+                  <input type="hidden" name="start" th:value="${startDate}" />
+                  <button
+                    type="submit"
+                    th:text="'Selesai'"
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                  ></button>
+                </form>
+
+                <!-- Info -->
+                <div class="flex-1">
+                  <h4
+                    class="font-semibold text-red-600"
+                    th:text="${task.judul}"
+                  >
+                    Judul
+                  </h4>
+                  <p class="text-sm text-gray-500">
+                    Deadline:
+                    <span
+                      th:text="${#temporals.format(task.tanggalDeadline, 'dd MMM yyyy')}"
+                    ></span>
+                    <span th:text="${task.waktuDeadline}"></span>
+                  </p>
+                </div>
+
+                <!-- Edit & Hapus -->
+                <a
+                  th:href="@{/tugas/edit/{id}(id=${task.id})}"
+                  class="bg-blue-500 text-white px-3 py-1 rounded"
+                  >✎</a
+                >
+                <form
+                  th:action="@{/tugas/hapus/{id}(id=${task.id})}"
+                  method="post"
+                  onsubmit="return confirm('Yakin ingin menghapus task ini?');"
+                >
+                  <button
+                    type="submit"
+                    class="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    🗑
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hari Ini -->
+          <div th:if="${!#lists.isEmpty(todayTasks)}" class="mb-4">
+            <h4 class="text-gray-700 font-bold mb-2">Hari Ini</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div
+                th:each="task : ${todayTasks}"
+                class="bg-white p-4 rounded shadow flex items-center gap-4"
+              >
+                <!-- Tombol -->
+                <form
+                  th:action="@{/tugas/selesai/{id}(id=${task.id})}"
+                  method="post"
+                >
+                  <input type="hidden" name="date" th:value="${selectedDate}" />
+                  <input type="hidden" name="start" th:value="${startDate}" />
+                  <button
+                    type="submit"
+                    th:text="${task.selesai ? 'Pending' : 'Selesai'}"
+                    th:classappend="${task.selesai ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}"
+                    class="text-white px-3 py-1 rounded"
+                  ></button>
+                </form>
+
+                <!-- Info -->
+                <div class="flex-1">
+                  <h4
+                    class="font-semibold text-gray-800"
+                    th:text="${task.judul}"
+                  >
+                    Judul
+                  </h4>
+                  <p class="text-sm text-gray-500">
+                    Deadline:
+                    <span
+                      th:text="${#temporals.format(task.tanggalDeadline, 'dd MMM yyyy')}"
+                    ></span>
+                    <span th:text="${task.waktuDeadline}"></span>
+                  </p>
+                  <p
+                    th:if="${task.selesai}"
+                    class="text-green-600 font-semibold"
+                  >
+                    Selesai
+                  </p>
+                </div>
+
+                <!-- Edit -->
+                <a
+                  th:href="@{/tugas/edit/{id}(id=${task.id})}"
+                  class="bg-blue-500 text-white px-3 py-1 rounded"
+                  >✎</a
+                >
+
+                <!-- Hapus -->
+                <form
+                  th:action="@{/tugas/hapus/{id}(id=${task.id})}"
+                  method="post"
+                  onsubmit="return confirm('Yakin ingin menghapus task ini?');"
+                >
+                  <button
+                    type="submit"
+                    class="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    🗑
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tugas Tanggal Dipilih -->
+          <div
+            th:if="${selectedDate != today and !#lists.isEmpty(selectedDateTasks)}"
+            class="mb-4"
+          >
+            <h4 class="text-gray-700 font-bold mb-2">
+              Tugas pada
+              <span
+                th:text="${#temporals.format(selectedDate, 'dd MMM yyyy')}"
+              ></span>
+            </h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div
+                th:each="task : ${selectedDateTasks}"
+                class="bg-white p-4 rounded shadow flex items-center gap-4"
+              >
+                <!-- Tombol -->
+                <form
+                  th:action="@{/tugas/selesai/{id}(id=${task.id})}"
+                  method="post"
+                >
+                  <input type="hidden" name="date" th:value="${selectedDate}" />
+                  <input type="hidden" name="start" th:value="${startDate}" />
+                  <button
+                    type="submit"
+                    th:text="${task.selesai ? 'Pending' : 'Selesai'}"
+                    th:classappend="${task.selesai ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}"
+                    class="text-white px-3 py-1 rounded"
+                  ></button>
+                </form>
+                <!-- Info -->
+                <div class="flex-1">
+                  <h4
+                    class="font-semibold text-gray-800"
+                    th:text="${task.judul}"
+                  >
+                    Judul
+                  </h4>
+                  <p class="text-sm text-gray-500">
+                    Deadline:
+                    <span
+                      th:text="${#temporals.format(task.tanggalDeadline, 'dd MMM yyyy')}"
+                    ></span>
+                    <span th:text="${task.waktuDeadline}"></span>
+                  </p>
+                  <p
+                    th:if="${task.selesai}"
+                    class="text-green-600 font-semibold"
+                  >
+                    Selesai
+                  </p>
+                </div>
+                <!-- Edit -->
+                <a
+                  th:href="@{/tugas/edit/{id}(id=${task.id})}"
+                  class="bg-blue-500 text-white px-3 py-1 rounded"
+                  >✎</a
+                >
+                <!-- Hapus -->
+                <form
+                  th:action="@{/tugas/hapus/{id}(id=${task.id})}"
+                  method="post"
+                  onsubmit="return confirm('Yakin ingin menghapus task ini?');"
+                >
+                  <button
+                    type="submit"
+                    class="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    🗑
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kalau tidak ada tugas -->
+          <div
+            th:if="${#lists.isEmpty(overdueTasks) and #lists.isEmpty(todayTasks) and #lists.isEmpty(futureTasks)}"
+            class="text-gray-500"
+          >
+            Tidak ada tugas.
+          </div>
         </section>
       </main>
     </div>

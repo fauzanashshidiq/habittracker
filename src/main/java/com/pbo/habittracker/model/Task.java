@@ -15,6 +15,8 @@ public class Task {
 
     private LocalDate tanggalDeadline;
     private LocalTime waktuDeadline;
+    private boolean selesai = false;
+
 
     @ManyToOne
     private User user; // relasi ke user login
@@ -61,4 +63,12 @@ public class Task {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public boolean isSelesai() {
+        return selesai;
+    }
+    public void setSelesai(boolean selesai) {
+        this.selesai = selesai;
+    }
+    
 }

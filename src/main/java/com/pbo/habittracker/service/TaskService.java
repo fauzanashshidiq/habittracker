@@ -27,11 +27,20 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public List<Task> findTasksByUser(String username) {
-        return taskRepository.findByUserUsername(username);
+    public List<Task> findAllByUser(String username) {
+        return taskRepository.findByUserUsernameOrderByTanggalDeadlineAsc(username);
+    }
+
+    public Task findById(Long id) {
+        return taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task tidak ditemukan"));
     }
 
     public List<Task> getTasksByDate(LocalDate date) {
         return taskRepository.findByTanggalDeadline(date);
     }
+    
+    public void delete(Task task) {
+        taskRepository.delete(task);
+    }
+    
 }
