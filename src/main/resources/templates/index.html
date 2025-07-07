@@ -1,121 +1,1235 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HabitTracker - Stay Consistent</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-      body {
-        font-family: "Inter", sans-serif;
-      }
+        :root {
+            --primary: #7c3aed;
+            --primary-hover: #6d28d9;
+            --secondary: #a855f7;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --close: #ff5f56;
+            --minimize: #ffbd2e;
+            --expand: #27c93f;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --border-primary: #e2e8f0;
+            --border-secondary: #e2e8f0;
+            --shadow-primary: 0 4px 16px rgba(0, 0, 0, 0.1);
+            --shadow-secondary: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-heavy: 0 32px 64px rgba(0, 0, 0, 0.12);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Typography System */
+        .text-display {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .text-headline {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .text-subhead {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .text-body {
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.7;
+        }
+
+        .text-caption {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Enhanced Text Wrapper */
+        .text-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .text-wrapper-narrow {
+            max-width: 800px;
+        }
+
+        /* macOS Window Enhancement */
+        .mac-window {
+            border-radius: 20px;
+            overflow: hidden;
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow-heavy);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            width: 100%;
+            max-width: 1400px;
+            margin: 3rem auto;
+            position: relative;
+            will-change: transform;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .mac-titlebar {
+            height: 52px;
+            background: linear-gradient(to bottom, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(250, 250, 250, 0.9) 100%);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-bottom: 1px solid var(--border-secondary);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            cursor: move;
+            user-select: none;
+            position: relative;
+        }
+        
+        .mac-titlebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.6),
+                transparent
+            );
+            transform: translateX(-100%);
+            animation: shine 6s infinite;
+        }
+        
+        @keyframes shine {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        
+        .mac-buttons {
+            display: flex;
+            gap: 10px;
+            margin-right: 20px;
+        }
+        
+        .mac-buttons span {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            border: 0.5px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .mac-buttons span::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .mac-buttons span:hover::after {
+            opacity: 1;
+        }
+        
+        .mac-buttons span:hover {
+            transform: scale(1.15);
+        }
+        
+        .mac-close {
+            background: var(--close);
+        }
+        
+        .mac-minimize {
+            background: var(--minimize);
+        }
+        
+        .mac-expand {
+            background: var(--expand);
+        }
+        
+        .mac-title {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-align: center;
+            flex-grow: 1;
+            padding-right: 80px;
+            letter-spacing: 0.2px;
+        }
+        
+        .mac-content {
+            background: var(--bg-secondary);
+            padding: 0;
+            min-height: calc(100vh - 52px - 6rem);
+        }
+        
+        /* Enhanced Background */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, 
+                #f5f3ff 0%, 
+                #ede9fe 25%, 
+                #e9d5ff 50%, 
+                #f3e8ff 75%, 
+                #faf5ff 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 25s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* Floating Elements */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(135deg, 
+                rgba(124, 58, 237, 0.08), 
+                rgba(168, 85, 247, 0.08));
+            animation: float 25s infinite ease-in-out;
+            filter: blur(2px);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+        
+        /* Content Sections */
+        .content-section {
+            padding: 100px 0;
+        }
+        
+        /* Hero Section - Modern Redesign */
+        .hero-section {
+            background: linear-gradient(135deg, 
+                var(--primary) 0%, 
+                var(--secondary) 100%);
+            color: white;
+            padding: 120px 0 160px;
+            position: relative;
+            overflow: hidden;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                transparent 70%);
+            animation: rotate 40s linear infinite;
+        }
+        
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            background: linear-gradient(to right, 
+                rgba(255, 255, 255, 1) 0%, 
+                rgba(255, 255, 255, 0.9) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            max-width: 600px;
+            opacity: 0.9;
+            margin-bottom: 2.5rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Modern Moving Text */
+        .moving-text-container {
+            position: relative;
+            height: 60px;
+            margin: 2.5rem 0;
+            overflow: hidden;
+        }
+        
+        .moving-text-wrapper {
+            display: flex;
+            position: absolute;
+            white-space: nowrap;
+            will-change: transform;
+            animation: moveText 40s linear infinite;
+        }
+        
+        .moving-text-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 2rem;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: white;
+            opacity: 0.85;
+        }
+        
+        .moving-text-item i {
+            margin-right: 1rem;
+            color: var(--accent);
+            font-size: 1.1em;
+        }
+        
+        @keyframes moveText {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* Modern Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2.5rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            text-decoration: none;
+            gap: 0.75rem;
+            border: none;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 6px 24px rgba(124, 58, 237, 0.25);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(124, 58, 237, 0.35);
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, 
+                rgba(255,255,255,0.8) 0%, 
+                rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .btn-primary:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Button Group */
+        .btn-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        /* Features Section */
+        .features-section {
+            background: var(--bg-secondary);
+        }
+        
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 3rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 0;
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+        
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 4rem;
+            text-align: center;
+            line-height: 1.7;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 2.5rem;
+            margin-top: 4rem;
+        }
+        
+        /* Modern Feature Card */
+        .feature-card {
+            background: var(--bg-secondary);
+            border-radius: 18px;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-primary);
+            border: 1px solid var(--border-secondary);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, 
+                var(--primary), 
+                var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-heavy);
+            border-color: var(--primary);
+        }
+        
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, 
+                var(--primary), 
+                var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.75rem;
+            box-shadow: var(--shadow-secondary);
+            transition: all 0.4s ease;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: rotate(8deg) scale(1.1);
+        }
+        
+        .feature-icon i {
+            font-size: 30px;
+            color: white;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-title {
+            color: var(--primary);
+        }
+        
+        .feature-description {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        
+        /* Productivity Section */
+        .productivity-section {
+            background: var(--bg-tertiary);
+            position: relative;
+        }
+        
+        .productivity-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+        
+        .productivity-text h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+        
+        .productivity-text p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+        }
+        
+        .productivity-visual {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-heavy);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .productivity-visual:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Task Window */
+        .task-window {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-heavy);
+            transition: all 0.3s ease;
+        }
+        
+        .task-window-header {
+            height: 42px;
+            background: linear-gradient(to bottom, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(250, 250, 250, 0.9) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-secondary);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+        
+        .task-window-buttons {
+            display: flex;
+            gap: 8px;
+            margin-right: 16px;
+        }
+        
+        .task-window-buttons span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border: 0.5px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-window-close {
+            background: var(--close);
+        }
+        
+        .task-window-minimize {
+            background: var(--minimize);
+        }
+        
+        .task-window-expand {
+            background: var(--expand);
+        }
+        
+        .task-window-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .task-window-content {
+            padding: 2rem;
+            background: var(--bg-secondary);
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+        
+        .task-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-primary);
+            border-left-color: var(--primary);
+        }
+        
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--primary);
+            border-radius: 6px;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .task-checkbox:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 5px rgba(124, 58, 237, 0.1);
+        }
+        
+        .task-checkbox.completed {
+            background: var(--primary);
+        }
+        
+        .task-checkbox.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .task-text {
+            flex-grow: 1;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .task-item.completed .task-text {
+            color: var(--text-secondary);
+            text-decoration: line-through;
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, 
+                #1e293b 0%, 
+                #0f172a 100%);
+            color: white;
+            padding: 6rem 0 4rem;
+            text-align: center;
+            clip-path: polygon(0 20%, 100% 0, 100% 100%, 0% 100%);
+        }
+        
+        .footer p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+        }
+        
+        /* Typing Animation */
+        .typing-animation {
+            display: inline-block;
+            position: relative;
+        }
+        
+        .typing-animation::after {
+            content: '|';
+            position: absolute;
+            right: -8px;
+            animation: blink 1s infinite;
+            color: white;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .content-section {
+                padding: 80px 0;
+            }
+            
+            .productivity-content {
+                gap: 3rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mac-window {
+                margin: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .content-section {
+                padding: 60px 0;
+            }
+            
+            .hero-section {
+                padding: 80px 0 120px;
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+            
+            .productivity-content {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .moving-text-item {
+                font-size: 1.1rem;
+                padding: 0 1.5rem;
+            }
+            
+            .btn-group {
+                gap: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .mac-window {
+                margin: 1rem;
+                border-radius: 14px;
+            }
+            
+            .content-section {
+                padding: 50px 0;
+            }
+            
+            .hero-title {
+                font-size: 2.2rem;
+            }
+            
+            .btn {
+                padding: 0.9rem 1.75rem;
+                font-size: 1rem;
+                width: 100%;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .feature-card {
+                padding: 2rem;
+            }
+        }
+        
+        /* Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2.5s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
     </style>
-  </head>
-  <body class="bg-gray-50 text-gray-900">
-    <!-- Navbar -->
-    <header class="bg-white shadow-md sticky top-0 z-50">
-      <div
-        class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"
-      >
-        <h1
-          class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#FF5A57] via-[#E02F75] to-[#6700A3]"
-        >
-          HabitTracker
-        </h1>
-        <nav class="space-x-4">
-          <a href="/login" class="text-gray-700 hover:text-[#E02F75] transition"
-            >Login</a
-          >
-          <a
-            href="/register"
-            class="bg-gradient-to-r from-[#FF5A57] via-[#E02F75] to-[#6700A3] text-white px-4 py-2 rounded-md hover:opacity-90 transition"
-          >
-            Register
-          </a>
-        </nav>
-      </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section
-      class="bg-gradient-to-br from-[#FF5A57] via-[#E02F75] to-[#050C38] text-white py-24"
-    >
-      <div class="max-w-4xl mx-auto text-center px-4">
-        <h2 class="text-5xl font-bold mb-6 leading-tight">
-          Bangun Kebiasaan Hebat, Capai Tujuan Hidup
-        </h2>
-        <p class="text-xl text-gray-200 mb-8">
-          HabitTracker membantumu membangun rutinitas sehat, menyelesaikan tugas
-          penting, dan meningkatkan konsistensi.
-        </p>
-        <div class="space-x-4">
-          <a
-            href="/register"
-            class="bg-white text-[#E02F75] font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-gray-100 transition"
-          >
-            Mulai Sekarang
-          </a>
-          <a
-            href="/login"
-            class="underline text-white hover:text-gray-300 transition"
-          >
-            Sudah punya akun?
-          </a>
+</head>
+<body>
+    <!-- Enhanced Background -->
+    <div class="gradient-bg"></div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-elements" id="floatingElements"></div>
+    
+    <!-- Enhanced Mac OS Window -->
+    <div class="mac-window" id="main-window">
+        <div class="mac-titlebar" id="titlebar">
+            <div class="mac-buttons">
+                <span class="mac-close" id="close-btn"></span>
+                <span class="mac-minimize" id="minimize-btn"></span>
+                <span class="mac-expand" id="expand-btn"></span>
+            </div>
+            <div class="mac-title">HabitTracker - Stay Consistent & Achieve Your Goals</div>
         </div>
-      </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="py-20 bg-gray-50">
-      <div class="max-w-6xl mx-auto px-6">
-        <h3 class="text-3xl font-bold text-center mb-12 text-gray-800">
-          Kenapa Memakai HabitTracker?
-        </h3>
-        <div class="grid md:grid-cols-3 gap-10">
-          <!-- Card 1 -->
-          <div
-            class="bg-white shadow-lg rounded-xl p-6 hover:shadow-2xl transition duration-300 border-t-4 border-[#FF5A57]"
-          >
-            <div class="text-4xl mb-4">📈</div>
-            <h4 class="text-xl font-semibold mb-2">Pantau Progres</h4>
-            <p class="text-gray-600">
-              Visualisasikan kebiasaanmu dalam grafik harian yang informatif dan
-              mudah dipahami.
-            </p>
-          </div>
-
-          <!-- Card 2 -->
-          <div
-            class="bg-white shadow-lg rounded-xl p-6 hover:shadow-2xl transition duration-300 border-t-4 border-[#E02F75]"
-          >
-            <div class="text-4xl mb-4">📝</div>
-            <h4 class="text-xl font-semibold mb-2">To-Do List Harian</h4>
-            <p class="text-gray-600">
-              Kelola tugas harianmu dengan deadline, prioritas, dan status
-              penyelesaian.
-            </p>
-          </div>
-
-          <!-- Card 3 -->
-          <div
-            class="bg-white shadow-lg rounded-xl p-6 hover:shadow-2xl transition duration-300 border-t-4 border-[#6700A3]"
-          >
-            <div class="text-4xl mb-4">🎯</div>
-            <h4 class="text-xl font-semibold mb-2">Fokus pada Tujuan</h4>
-            <p class="text-gray-600">
-              Bangun pola hidup positif yang selaras dengan impian dan target
-              jangka panjangmu.
-            </p>
-          </div>
+        
+        <div class="mac-content">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="text-wrapper">
+                    <h1 class="hero-title text-display">
+                        <span class="typing-animation" id="typing-text"></span>
+                    </h1>
+                    
+                    <div class="moving-text-container">
+                        <div class="moving-text-wrapper">
+                            <div class="moving-text-item">
+                                <i class="fas fa-fire"></i> Track your progress
+                            </div>
+                            <div class="moving-text-item">
+                                <i class="fas fa-chart-line"></i> Stay motivated
+                            </div>
+                            <div class="moving-text-item">
+                                <i class="fas fa-trophy"></i> Achieve your goals
+                            </div>
+                            <div class="moving-text-item">
+                                <i class="fas fa-calendar-check"></i> Build routines
+                            </div>
+                            <div class="moving-text-item">
+                                <i class="fas fa-bolt"></i> Transform your life
+                            </div>
+                            <!-- Duplicate for seamless loop -->
+                            <div class="moving-text-item">
+                                <i class="fas fa-fire"></i> Track your progress
+                            </div>
+                            <div class="moving-text-item">
+                                <i class="fas fa-chart-line"></i> Stay motivated
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="hero-subtitle text-body">
+                        HabitTracker helps you build positive routines and break bad habits with science-based techniques and beautiful tracking tools.
+                    </p>
+                    
+                    <div class="btn-group">
+                        <a href="/register" class="btn btn-primary pulse-animation">
+                            <i class="fas fa-rocket"></i>
+                            Get Started - It's Free
+                        </a>
+                        <a href="/login" class="btn btn-secondary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Sign In
+                        </a>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Features Section -->
+            <section class="features-section content-section">
+                <div class="text-wrapper">
+                    <h2 class="section-title text-headline animate-on-scroll">
+                        Powerful Features
+                    </h2>
+                    <p class="section-subtitle text-body animate-on-scroll">
+                        Designed to help you build better habits with less effort and more motivation
+                    </p>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card animate-on-scroll">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3 class="feature-title text-subhead">Visual Progress</h3>
+                            <p class="feature-description text-body">
+                                Beautiful charts and analytics show your habit streaks, completion rates, and growth over time.
+                            </p>
+                        </div>
+                        
+                        <div class="feature-card animate-on-scroll">
+                            <div class="feature-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <h3 class="feature-title text-subhead">Smart Reminders</h3>
+                            <p class="feature-description text-body">
+                                Personalized notifications that adapt to your schedule and help you stay on track.
+                            </p>
+                        </div>
+                        
+                        <div class="feature-card animate-on-scroll">
+                            <div class="feature-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <h3 class="feature-title text-subhead">Routine Planning</h3>
+                            <p class="feature-description text-body">
+                                Schedule habits at optimal times based on your existing routines and energy levels.
+                            </p>
+                        </div>
+                        
+                        <div class="feature-card animate-on-scroll">
+                            <div class="feature-icon">
+                                <i class="fas fa-bullseye"></i>
+                            </div>
+                            <h3 class="feature-title text-subhead">Goal Setting</h3>
+                            <p class="feature-description text-body">
+                                Break big goals into daily habits and track your progress toward meaningful milestones.
+                            </p>
+                        </div>
+                        
+                        <div class="feature-card animate-on-scroll">
+                            <div class="feature-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3 class="feature-title text-subhead">Community</h3>
+                            <p class="feature-description text-body">
+                                Join accountability groups and share your progress with like-minded people.
+                            </p>
+                        </div>
+                        
+                        <div class="feature-card animate-on-scroll">
+                            <div class="feature-icon">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            <h3 class="feature-title text-subhead">Cross-Platform</h3>
+                            <p class="feature-description text-body">
+                                Access your habits anywhere, anytime. Sync across all your devices with real-time updates.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Productivity Demo Section -->
+            <section class="productivity-section content-section">
+                <div class="text-wrapper">
+                    <div class="productivity-content">
+                        <div class="productivity-text animate-on-scroll">
+                            <h2 class="text-headline">Simple Yet Powerful</h2>
+                            <p class="text-body">
+                                HabitTracker makes it effortless to build habits while providing powerful insights to keep you motivated. Our interface is designed for focus and clarity.
+                            </p>
+                            <a href="/register" class="btn btn-primary">
+                                <i class="fas fa-play"></i>
+                                Try It Now
+                            </a>
+                        </div>
+                        
+                        <div class="productivity-visual animate-on-scroll">
+                            <div class="task-window">
+                                <div class="task-window-header">
+                                    <div class="task-window-buttons">
+                                        <span class="task-window-close"></span>
+                                        <span class="task-window-minimize"></span>
+                                        <span class="task-window-expand"></span>
+                                    </div>
+                                    <div class="task-window-title">Today's Habits</div>
+                                </div>
+                                <div class="task-window-content">
+                                    <div class="task-item">
+                                        <div class="task-checkbox completed"></div>
+                                        <span class="task-text">Morning meditation (10 min)</span>
+                                    </div>
+                                    <div class="task-item">
+                                        <div class="task-checkbox completed"></div>
+                                        <span class="task-text">Drink 8 glasses of water</span>
+                                    </div>
+                                    <div class="task-item">
+                                        <div class="task-checkbox"></div>
+                                        <span class="task-text">Read 30 pages</span>
+                                    </div>
+                                    <div class="task-item">
+                                        <div class="task-checkbox"></div>
+                                        <span class="task-text">Evening workout</span>
+                                    </div>
+                                    <div class="task-item">
+                                        <div class="task-checkbox"></div>
+                                        <span class="task-text">Journal reflection</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="text-wrapper text-wrapper-narrow">
+                    <p class="text-body">&copy; 2025 HabitTracker. All rights reserved. Designed with ❤️ for people who want to grow.</p>
+                </div>
+            </footer>
         </div>
-      </div>
-    </section>
+    </div>
 
-    <!-- Footer -->
-    <footer
-      class="bg-gradient-to-r from-[#6700A3] to-[#050C38] py-8 text-center text-white"
-    >
-      <p>&copy; 2025 HabitTracker. All rights reserved.</p>
-    </footer>
-  </body>
+    <script>
+        // Create floating elements
+        function createFloatingElements() {
+            const container = document.getElementById('floatingElements');
+            const elementCount = 20;
+            
+            for (let i = 0; i < elementCount; i++) {
+                const element = document.createElement('div');
+                element.classList.add('floating-element');
+                
+                const size = Math.random() * 120 + 30;
+                element.style.width = `${size}px`;
+                element.style.height = `${size}px`;
+                element.style.left = `${Math.random() * 100}%`;
+                element.style.top = `${Math.random() * 100}%`;
+                
+                const duration = Math.random() * 25 + 15;
+                const delay = Math.random() * 10;
+                element.style.animation = `float ${duration}s infinite ease-in-out ${delay}s`;
+                element.style.opacity = Math.random() * 0.15 + 0.05;
+                
+                container.appendChild(element);
+            }
+        }
+        
+        // Enhanced window controls
+        const mainWindow = document.getElementById('main-window');
+        const closeBtn = document.getElementById('close-btn');
+        const minimizeBtn = document.getElementById('minimize-btn');
+        const expandBtn = document.getElementById('expand-btn');
+        const titlebar = document.getElementById('titlebar');
+        
+        let isMinimized = false;
+        let isFullscreen = false;
+        let isDragging = false;
+        let offsetX, offsetY;
+        
+        // Close button with enhanced animation
+        closeBtn.addEventListener('click', () => {
+            mainWindow.style.transform = 'scale(0.8) rotateX(10deg)';
+            mainWindow.style.opacity = '0';
+            setTimeout(() => {
+                document.body.innerHTML = `
+                    <div class="flex items-center justify-center min-h-screen bg-gray-100">
+                        <div class="text-center p-8 bg-white rounded-2xl shadow-2xl">
+                            <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-times text-3xl text-red-500"></i>
+                            </div>
+                            <h1 class="text-2xl font-bold mb-2">Window Closed</h1>
+                            <p class="text-gray-600 mb-4">Click anywhere to reopen</p>
+                        </div>
+                    </div>
+                `;
+                document.body.addEventListener('click', () => {
+                    window.location.reload();
+                });
+            }, 300);
+        });
+        
+        // Minimize with bounce effect
+        minimizeBtn.addEventListener('click', () => {
+            if (!isMinimized) {
+                mainWindow.style.transform = 'scale(0.1) translateY(100vh)';
+                mainWindow.style.opacity = '0.3';
+                isMinimized = true;
+                setTimeout(() => {
+                    mainWindow.style.transform = 'scale(0.95) translateY(80vh)';
+                    mainWindow.style.opacity = '0.8';
+                }, 300);
+            } else {
+                mainWindow.style.transform = 'scale(1) translateY(0)';
+                mainWindow.style.opacity = '1';
+                isMinimized = false;
+            }
+        });
+        
+        // Fullscreen with smooth transition
+        expandBtn.addEventListener('click', () => {
+            if (!isFullscreen) {
+                mainWindow.style.position = 'fixed';
+                mainWindow.style.top = '0';
+                mainWindow.style.left = '0';
+                mainWindow.style.width = '100vw';
+                mainWindow.style.height = '100vh';
+                mainWindow.style.maxWidth = 'none';
+                mainWindow.style.margin = '0';
+                mainWindow.style.borderRadius = '0';
+                isFullscreen = true;
+            } else {
+                mainWindow.style.position = 'relative';
+                mainWindow.style.top = 'auto';
+                mainWindow.style.left = 'auto';
+                mainWindow.style.width = '100%';
+                mainWindow.style.height = 'auto';
+                mainWindow.style.maxWidth = '1400px';
+                mainWindow.style.margin = '3rem auto';
+                mainWindow.style.borderRadius = '20px';
+                isFullscreen = false;
+            }
+        });
+        
+        // Make window draggable
+        titlebar.addEventListener('mousedown', (e) => {
+            if (e.target === titlebar || e.target.classList.contains('mac-title')) {
+                isDragging = true;
+                offsetX = e.clientX - mainWindow.getBoundingClientRect().left;
+                offsetY = e.clientY - mainWindow.getBoundingClientRect().top;
+                mainWindow.style.cursor = 'grabbing';
+                mainWindow.style.transition = 'none';
+            }
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging && !isFullscreen) {
+                mainWindow.style.left = `${e.clientX - offsetX}px`;
+                mainWindow.style.top = `${e.clientY - offsetY}px`;
+                mainWindow.style.margin = '0';
+                mainWindow.style.position = 'fixed';
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            mainWindow.style.cursor = '';
+            mainWindow.style.transition = 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
+        });
+        
+        // Task interactions
+        document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const taskItem = this.closest('.task-item');
+                const taskText = taskItem.querySelector('.task-text');
+                
+                if (this.classList.contains('completed')) {
+                    taskText.style.textDecoration = 'line-through';
+                    taskText.style.opacity = '0.7';
+                } else {
+                    taskText.style.textDecoration = 'none';
+                    taskText.style.opacity = '1';
+                }
+            });
+        });
+        
+        // Scroll animations
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.animate-on-scroll');
+            const windowHeight = window.innerHeight;
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementPosition < windowHeight - elementVisible) {
+                    element.classList.add('animated');
+                }
+            });
+        };
+        
+        // Typing animation for hero title
+        const typeText = (element, text, speed) => {
+            let i = 0;
+            element.textContent = '';
+            
+            const typing = () => {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(typing, speed);
+                } else {
+                    // Remove the cursor after typing is complete
+                    element.classList.remove('typing-animation');
+                }
+            };
+            
+            typing();
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createFloatingElements();
+            animateOnScroll();
+            window.addEventListener('scroll', animateOnScroll);
+            
+            // Start typing animation
+            const typingText = document.getElementById('typing-text');
+            typeText(typingText, "Build Better Habits,\nBuild a Better You.", 50);
+        });
+    </script>
+</body>
 </html>
