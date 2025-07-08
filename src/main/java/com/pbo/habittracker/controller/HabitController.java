@@ -4,7 +4,9 @@ import com.pbo.habittracker.model.Habit;
 import com.pbo.habittracker.model.User;
 import com.pbo.habittracker.repository.HabitRepository;
 import com.pbo.habittracker.repository.UserRepository;
+import com.pbo.habittracker.service.HabitCompletionService;
 import com.pbo.habittracker.service.HabitService;
+import com.pbo.habittracker.service.UserService;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -14,7 +16,10 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/kebiasaan")
@@ -22,12 +27,16 @@ public class HabitController {
 
     private final HabitRepository habitRepository;
     private final UserRepository userRepository;
-     private final HabitService habitService;
+    private final HabitService habitService;
+    private final HabitCompletionService habitCompletionService;
+    private final UserService userService;
 
-    public HabitController(HabitRepository habitRepository, UserRepository userRepository, HabitService habitService) {
+    public HabitController(HabitRepository habitRepository, UserRepository userRepository, HabitService habitService, HabitCompletionService habitCompletionService, UserService userService) {
         this.habitRepository = habitRepository;
         this.userRepository = userRepository;
         this.habitService = habitService;
+        this.habitCompletionService = habitCompletionService;
+        this.userService = userService;
     }
 
     @GetMapping("/tambah")
@@ -128,14 +137,63 @@ public String deleteHabit(
 
 
 @GetMapping("")
-public String showCompletedHabits(Model model, Principal principal) {
-    User user = userRepository.findByUsername(principal.getName())
-        .orElseThrow(() -> new RuntimeException("User not found"));
+public String kebiasaanSelesai(
+        @RequestParam(value = "date", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate date,
+        @RequestParam(value = "start", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate start,
+        Model model,
+        Principal principal
+) {
+    LocalDate today = LocalDate.now();
+    LocalDate selectedDate = (date != null) ? date : today;
+    LocalDate startDate = (start != null) ? start : today.minusDays(3);
 
-    List<Habit> completedHabits = habitService.getCompletedHabits(user);
+    String username = principal.getName();
+
+    User user = userService.findByUsername(username); // bukan new User() ya
+List<Habit> completedHabits = habitService.getCompletedHabits(user);
+
+
+
+    Map<Long, Long> sisaMingguan = new HashMap<>();
+    Map<Long, Long> sisaBulanan = new HashMap<>();
+
+    for (Habit h : completedHabits) {
+        long total;
+        long done;
+
+        if ("Mingguan".equals(h.getFrekuensi())) {
+            total = 7;
+            done = habitCompletionService.countByHabitAndTanggalSelesaiBetween(
+                    h,
+                    selectedDate.minusDays(6),
+                    selectedDate
+            );
+            sisaMingguan.put(h.getId(), total - done);
+        }
+        if ("Bulanan".equals(h.getFrekuensi())) {
+            YearMonth ym = YearMonth.from(selectedDate);
+            total = ym.lengthOfMonth();
+            done = habitCompletionService.countByHabitAndTanggalSelesaiBetween(
+                    h,
+                    ym.atDay(1),
+                    ym.atEndOfMonth()
+            );
+            sisaBulanan.put(h.getId(), total - done);
+        }
+    }
+
     model.addAttribute("habits", completedHabits);
-    model.addAttribute("username", principal.getName());
-    model.addAttribute("redirectPage", "kebiasaan");
+    model.addAttribute("sisaMingguan", sisaMingguan);
+    model.addAttribute("sisaBulanan", sisaBulanan);
+    model.addAttribute("username", username);
+    model.addAttribute("selectedDate", selectedDate);
+    model.addAttribute("startDate", startDate);
+    model.addAttribute("today", today);
+
     return "kebiasaan";
 }
 

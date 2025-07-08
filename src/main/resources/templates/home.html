@@ -193,12 +193,24 @@
               >
                 <input type="hidden" name="date" th:value="${selectedDate}" />
                 <input type="hidden" name="start" th:value="${startDate}" />
+                <!-- Disable tombol jika selectedDate > today -->
                 <button
                   type="submit"
                   class="text-white px-3 py-1 rounded"
+                  th:if="${selectedDate <= today}"
                   th:classappend="${@habitCompletionService.isDoneOnDate(habit, selectedDate)} ? ' bg-yellow-500 hover:bg-yellow-600' : ' bg-green-500 hover:bg-green-600'"
                   th:text="${@habitCompletionService.isDoneOnDate(habit, selectedDate)} ? '× Batal' : '✓ Selesai'"
                 ></button>
+
+                <!-- Tombol disabled kalau tanggal di masa depan -->
+                <button
+                  type="button"
+                  class="text-white px-3 py-1 rounded bg-gray-400 cursor-not-allowed"
+                  th:if="${selectedDate > today}"
+                  disabled
+                >
+                  Belum Bisa
+                </button>
               </form>
 
               <!-- Nama dan Frekuensi -->

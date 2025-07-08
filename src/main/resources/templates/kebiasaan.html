@@ -133,11 +133,21 @@
             >
               Nama Kebiasaan
             </h3>
-            <p
-              class="text-gray-500"
-              th:text="'Frekuensi: ' + ${habit.frekuensi}"
-            >
-              Frekuensi
+            <p class="text-gray-500">
+              <span th:switch="${habit.frekuensi}">
+                <span th:case="'Harian'">Frekuensi: Harian</span>
+                <span th:case="'Mingguan'">
+                  Frekuensi: Mingguan - Sisa
+                  <span th:text="${sisaMingguan[habit.id]}">0</span> hari
+                </span>
+                <span th:case="'Bulanan'">
+                  Frekuensi: Bulanan - Sisa
+                  <span th:text="${sisaBulanan[habit.id]}">0</span> hari
+                </span>
+                <span th:case="*"
+                  >Frekuensi: <span th:text="${habit.frekuensi}"></span
+                ></span>
+              </span>
             </p>
 
             <!-- Tanggal Diselesaikan -->
