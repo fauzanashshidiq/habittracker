@@ -154,7 +154,7 @@ public String kebiasaanSelesai(
     String username = principal.getName();
 
     User user = userService.findByUsername(username); // bukan new User() ya
-List<Habit> completedHabits = habitService.getCompletedHabits(user);
+    List<Habit> completedHabits = habitService.getCompletedHabits(user);
 
 
 
