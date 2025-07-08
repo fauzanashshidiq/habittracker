@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/tugas")
@@ -62,6 +65,7 @@ public class TaskController {
     @PostMapping("/hapus/{id}")
 public String hapusTask(
         @PathVariable Long id,
+        @RequestParam(required = false) String redirectPage,
         Principal principal
 ) {
     Task task = taskService.findById(id);
@@ -71,14 +75,21 @@ public String hapusTask(
     }
 
     taskService.delete(task);
+
+    if ("tugas".equals(redirectPage)) {
+        return "redirect:/tugas?selesai=" + task.isSelesai();
+    }
+
     return "redirect:/home";
 }
+
 
 @PostMapping("/selesai/{id}")
 public String toggleSelesai(
         @PathVariable Long id,
-        @RequestParam String date,
+        @RequestParam(required = false) String date,
         @RequestParam(required = false) String start,
+        @RequestParam(required = false) String redirectPage,
         Principal principal
 ) {
     Task task = taskService.findById(id);
@@ -90,7 +101,11 @@ public String toggleSelesai(
     task.setSelesai(!task.isSelesai());
     taskService.save(task);
 
-    // Tetap di hari yang dipilih
+    if ("tugas".equals(redirectPage)) {
+        return "redirect:/tugas?selesai=" + task.isSelesai();
+    }
+
+    // default redirect ke home
     String redirectUrl = "redirect:/home?date=" + date;
     if (start != null && !start.isEmpty()) {
         redirectUrl += "&start=" + start;
@@ -99,9 +114,11 @@ public String toggleSelesai(
 }
 
 
+
 @GetMapping("/edit/{id}")
 public String formEdit(
         @PathVariable Long id,
+        @RequestParam(required = false) String redirectPage,
         Model model,
         Principal principal
 ) {
@@ -114,6 +131,8 @@ public String formEdit(
     model.addAttribute("task", task);
     model.addAttribute("username", principal.getName());
     model.addAttribute("formMode", "edit");
+    model.addAttribute("redirectPage", redirectPage);
+
     return "form_task";
 }
 
@@ -124,6 +143,7 @@ public String simpanEdit(
         @RequestParam String deskripsi,
         @RequestParam String tanggalDeadline,
         @RequestParam String waktuDeadline,
+        @RequestParam(required = false) String redirectPage,
         Principal principal
 ) {
     Task task = taskService.findById(id);
@@ -139,7 +159,51 @@ public String simpanEdit(
 
     taskService.save(task);
 
+    if ("tugas".equals(redirectPage)) {
+        return "redirect:/tugas?selesai=" + task.isSelesai();
+    }
+
     return "redirect:/home";
 }
 
+@GetMapping("")
+    public String daftarTugas(
+        @RequestParam(value = "selesai", defaultValue = "false") boolean selesai,
+        Model model,
+        Principal principal
+) {
+    String username = principal.getName();
+    LocalDate hariIni = LocalDate.now();
+
+    List<Task> semuaTugas = taskService.findAllByUser(username);
+
+    if (!selesai) {
+        List<Task> overdueTasks = new ArrayList<>();
+        List<Task> pendingTasks = new ArrayList<>();
+
+        for (Task t : semuaTugas) {
+            if (!t.isSelesai()) {
+                if (t.getTanggalDeadline().isBefore(hariIni)) {
+                    overdueTasks.add(t);
+                } else {
+                    pendingTasks.add(t);
+                }
+            }
+        }
+
+        model.addAttribute("overdueTasks", overdueTasks);
+        model.addAttribute("pendingTasks", pendingTasks);
+    } else {
+        List<Task> completedTasks = semuaTugas.stream()
+                .filter(Task::isSelesai)
+                .collect(Collectors.toList());
+
+        model.addAttribute("completedTasks", completedTasks);
+    }
+
+    model.addAttribute("selesai", selesai);
+    model.addAttribute("username", username);
+
+    return "task";
+}
 }

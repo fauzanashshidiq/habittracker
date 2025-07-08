@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Controller
 @RequestMapping("/kebiasaan")
@@ -70,20 +71,26 @@ public class HabitController {
 
 
     @GetMapping("/edit/{id}")
-public String editHabitForm(@PathVariable Long id, Model model, Principal principal) {
-    
+public String editHabitForm(@PathVariable Long id, Model model, Principal principal,
+                            @RequestParam(value = "redirectPage", defaultValue = "home") String redirectPage) {
     model.addAttribute("username", principal.getName());
     Habit habit = habitRepository.findById(id).orElse(null);
     if (habit == null) {
         return "redirect:/home";
     }
     model.addAttribute("habit", habit);
+    model.addAttribute("redirectPage", redirectPage);
     return "form_habit";
 }
 
 
+
 @PostMapping("/update/{id}")
-public String updateHabit(@PathVariable Long id, @ModelAttribute Habit habitBaru) {
+public String updateHabit(
+        @PathVariable Long id,
+        @ModelAttribute Habit habitBaru,
+        @RequestParam(value = "redirectPage", required = false) String redirectPage
+) {
     Habit h = habitRepository.findById(id).orElseThrow();
     h.setNama(habitBaru.getNama());
     h.setFrekuensi(habitBaru.getFrekuensi());
@@ -91,14 +98,18 @@ public String updateHabit(@PathVariable Long id, @ModelAttribute Habit habitBaru
     h.setTanggalSelesai(habitBaru.getTanggalSelesai());
     h.setWaktu(habitBaru.getWaktu());
     habitRepository.save(h);
-    return "redirect:/home";
+
+    // Redirect ke halaman sesuai asal (default ke /home)
+    return "redirect:/" + (redirectPage != null ? redirectPage : "home");
 }
+
 
 @PostMapping("hapus/{id}")
 public String deleteHabit(
         @PathVariable Long id,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
         @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+        @RequestParam(value = "redirectPage", required = false) String redirectPage,
         Principal principal
 ) {
     Habit habit = habitService.findById(id);
@@ -107,8 +118,25 @@ public String deleteHabit(
     }
 
     habitService.deleteHabit(habit);
+
+    if ("kebiasaan".equals(redirectPage)) {
+        return "redirect:/kebiasaan";
+    }
+
     return "redirect:/home?date=" + date + "&start=" + start;
 }
 
+
+@GetMapping("")
+public String showCompletedHabits(Model model, Principal principal) {
+    User user = userRepository.findByUsername(principal.getName())
+        .orElseThrow(() -> new RuntimeException("User not found"));
+
+    List<Habit> completedHabits = habitService.getCompletedHabits(user);
+    model.addAttribute("habits", completedHabits);
+    model.addAttribute("username", principal.getName());
+    model.addAttribute("redirectPage", "kebiasaan");
+    return "kebiasaan";
+}
 
 }

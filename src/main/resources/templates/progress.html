@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Progress</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="bg-gray-100 flex">
+    <!-- Sidebar -->
+    <aside
+      class="bg-white w-64 min-h-screen shadow-xl px-6 py-4 space-y-6 fixed md:relative z-30"
+    >
+      <h2 class="text-xl font-bold text-[#6700A3] mb-4">Dashboard</h2>
+      <nav class="flex flex-col space-y-2">
+        <a
+          th:href="@{/home}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Home</a
+        >
+        <a
+          th:href="@{/kebiasaan}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Kebiasaan</a
+        >
+        <a
+          th:href="@{/tugas}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Tugas</a
+        >
+        <a
+          th:href="@{/progress}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Progress</a
+        >
+        <div class="mt-8 flex justify-center relative">
+          <button
+            onclick="document.getElementById('addMenu').classList.toggle('hidden')"
+            class="bg-[#6700A3] text-white px-5 py-3 rounded-full text-sm font-semibold shadow hover:bg-[#52007f] transition"
+          >
+            + Tambah
+          </button>
+          <div
+            id="addMenu"
+            class="absolute top-full mt-2 bg-white border border-gray-200 rounded shadow w-48 hidden z-50"
+          >
+            <a
+              href="/kebiasaan/tambah"
+              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >Tambah Kebiasaan</a
+            >
+            <a
+              href="/tugas/tambah"
+              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >Tambah Tugas</a
+            >
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-0 p-6">
+      <header
+        class="bg-white shadow px-6 py-4 flex justify-between items-center mb-6"
+      >
+        <h1 class="text-xl font-bold text-[#6700A3]">Progress</h1>
+        <div class="space-x-4">
+          <span class="text-gray-600"
+            >Halo, <b th:text="${username}">User</b></span
+          >
+          <a href="/logout" class="text-red-500 hover:text-red-700">Logout</a>
+        </div>
+      </header>
+
+      <!-- Statistik Ringkasan -->
+      <section class="grid md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white p-5 rounded shadow">
+          <h3 class="text-gray-600 text-sm">Kebiasaan Minggu Ini</h3>
+          <p
+            class="text-2xl font-bold text-[#6700A3]"
+            th:text="${habitMingguan}"
+          >
+            0
+          </p>
+        </div>
+        <div class="bg-white p-5 rounded shadow">
+          <h3 class="text-gray-600 text-sm">Tugas Selesai</h3>
+          <p class="text-2xl font-bold text-[#6700A3]" th:text="${taskSelesai}">
+            0
+          </p>
+        </div>
+        <div class="bg-white p-5 rounded shadow">
+          <h3 class="text-gray-600 text-sm">Tugas Terlambat</h3>
+          <p class="text-2xl font-bold text-red-500" th:text="${taskTelat}">
+            0
+          </p>
+        </div>
+      </section>
+
+      <!-- Progress Bar Kebiasaan -->
+      <section class="bg-white p-6 rounded shadow mb-6">
+        <h2 class="text-lg font-semibold text-[#6700A3] mb-4">
+          Progress Kebiasaan
+        </h2>
+
+        <!-- Jika kosong -->
+        <div th:if="${#maps.isEmpty(habitProgress)}" class="text-gray-500">
+          Belum ada kebiasaan yang diselesaikan minggu ini.
+        </div>
+
+        <!-- Jika ada data -->
+        <div
+          th:each="entry : ${habitProgress}"
+          th:unless="${#maps.isEmpty(habitProgress)}"
+        >
+          <p
+            class="text-gray-700 mb-1"
+            th:text="${entry.key.nama + ' (' + entry.value + '/7)'}"
+          ></p>
+          <div class="w-full bg-gray-200 h-4 rounded">
+            <div
+              class="bg-green-500 h-4 rounded"
+              th:style="'width:' + (${entry.value} * 100 / 7) + '%'"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grafik Statistik -->
+      <section class="bg-white p-6 rounded shadow">
+        <h2 class="text-lg font-semibold text-[#6700A3] mb-4">Grafik Tugas</h2>
+        <canvas id="habitChart" width="400" height="200"></canvas>
+      </section>
+    </main>
+
+    <!-- Chart.js Script -->
+    <script th:inline="javascript">
+      const habitCtx = document.getElementById("habitChart").getContext("2d");
+
+      const labels = /*[[${labels}]]*/ [];
+      const data = /*[[${taskPerDay.values()}]]*/ [];
+
+      new Chart(habitCtx, {
+        type: "bar",
+        data: {
+          labels: labels.map((d) => {
+            const date = new Date(d);
+            const hari = date.toLocaleDateString("id-ID", { weekday: "short" });
+            const tanggal = date.toLocaleDateString("id-ID", {
+              day: "2-digit",
+              month: "2-digit",
+            });
+            return `${hari} (${tanggal})`;
+          }),
+          datasets: [
+            {
+              label: "Tugas Diselesaikan",
+              data: data,
+              backgroundColor: "#6700A3",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 },
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

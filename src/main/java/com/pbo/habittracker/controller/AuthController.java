@@ -186,4 +186,38 @@ private List<LocalDate> generate7Days(LocalDate startDate) {
         session.invalidate();
         return "redirect:/login";
     }
+
+    @GetMapping("/progress")
+public String progress(Model model, Principal principal) {
+    String username = principal.getName();
+
+    int habitMingguan = habitCompletionService.countByUserThisWeek(username);
+    int taskSelesai = taskService.countCompletedThisWeek(username);
+    int taskTelat = taskService.countOverdue(username);
+
+    // Untuk Progress Bar
+    Map<Habit, Long> habitProgress = habitCompletionService.countHabitProgressThisWeek(username);
+
+    // Untuk Grafik
+    Map<LocalDate, Long> habitPerDay = habitCompletionService.countHabitCompletionsPerDayThisWeek(username);
+
+    List<String> labels = new ArrayList<>();
+LocalDate now = LocalDate.now();
+for (int i = 6; i >= 0; i--) {
+    labels.add(now.minusDays(i).toString()); // Format ISO yyyy-MM-dd
+}
+
+Map<LocalDate, Long> taskPerDay = taskService.countCompletedTasksPerDayThisWeek(username);
+model.addAttribute("taskPerDay", taskPerDay);
+model.addAttribute("labels", taskPerDay.keySet());
+    model.addAttribute("username", username);
+    model.addAttribute("habitMingguan", habitMingguan);
+    model.addAttribute("taskSelesai", taskSelesai);
+    model.addAttribute("taskTelat", taskTelat);
+    model.addAttribute("habitProgress", habitProgress);
+    model.addAttribute("habitPerDay", habitPerDay);
+
+    return "progress";
+}
+
 }

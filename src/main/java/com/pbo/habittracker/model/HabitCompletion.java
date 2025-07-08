@@ -10,6 +10,7 @@ public class HabitCompletion {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "habit_id")
     private Habit habit;
 
     private LocalDate tanggalSelesai;
@@ -23,4 +24,16 @@ public class HabitCompletion {
 
     public LocalDate getTanggalSelesai() { return tanggalSelesai; }
     public void setTanggalSelesai(LocalDate tanggalSelesai) { this.tanggalSelesai = tanggalSelesai; }
+
+    @Transient
+private String tanggalSelesaiFormatted;
+
+public String getTanggalSelesaiFormatted() {
+    return tanggalSelesaiFormatted;
+}
+
+public void setTanggalSelesaiFormatted(String tanggalSelesaiFormatted) {
+    this.tanggalSelesaiFormatted = tanggalSelesaiFormatted;
+}
+
 }

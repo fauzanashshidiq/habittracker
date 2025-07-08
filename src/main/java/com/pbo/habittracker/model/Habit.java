@@ -69,5 +69,8 @@ public class Habit {
 
     @OneToMany(mappedBy = "habit", cascade = CascadeType.ALL, orphanRemoval = true)
 private List<HabitCompletion> completions = new ArrayList<>();
+public List<HabitCompletion> getCompletions() {
+    return completions;
+}
 
 }

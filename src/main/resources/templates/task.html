@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Daftar Tugas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex">
+    <!-- Sidebar -->
+    <aside
+      class="bg-white w-64 min-h-screen shadow-xl px-6 py-4 space-y-6 fixed md:relative z-30 transition-transform duration-200 ease-in-out"
+      th:classappend="${sidebarOpen} ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'"
+    >
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold text-[#6700A3] mb-4">Dashboard</h2>
+        <button
+          class="md:hidden"
+          onclick="document.getElementById('sidebarOverlay').click()"
+        >
+          ✕
+        </button>
+      </div>
+      <nav class="flex flex-col space-y-2">
+        <a
+          th:href="@{/home}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Home</a
+        >
+        <a
+          th:href="@{/kebiasaan}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Kebiasaan</a
+        >
+        <a
+          th:href="@{/tugas}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Tugas</a
+        >
+        <a
+          th:href="@{/progress}"
+          class="text-gray-700 hover:text-[#E02F75] font-medium"
+          >Progress</a
+        >
+        <div class="mt-8 flex justify-center relative">
+          <button
+            onclick="document.getElementById('addMenu').classList.toggle('hidden')"
+            class="bg-[#6700A3] text-white px-5 py-3 rounded-full text-sm font-semibold shadow hover:bg-[#52007f] transition"
+          >
+            + Tambah
+          </button>
+          <div
+            id="addMenu"
+            class="absolute top-full mt-2 bg-white border border-gray-200 rounded shadow w-48 hidden z-50"
+          >
+            <a
+              href="/kebiasaan/tambah"
+              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >Tambah Kebiasaan</a
+            >
+            <a
+              href="/tugas/tambah"
+              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >Tambah Tugas</a
+            >
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Overlay -->
+    <div
+      id="sidebarOverlay"
+      class="fixed inset-0 bg-black bg-opacity-40 z-20 md:hidden hidden"
+      onclick="document.querySelector('aside').classList.add('-translate-x-full'); this.classList.add('hidden')"
+    ></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-0 p-6">
+      <!-- Top Navbar -->
+      <header
+        class="bg-white shadow px-6 py-4 flex justify-between items-center mb-6"
+      >
+        <button
+          class="md:hidden text-gray-700"
+          onclick="document.querySelector('aside').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden')"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+        <h1 class="text-xl font-bold text-[#6700A3]">HabitTracker</h1>
+        <div class="space-x-4">
+          <span class="text-gray-600"
+            >Halo, <b th:text="${username}">User</b></span
+          >
+          <a href="/logout" class="text-red-500 hover:text-red-700">Logout</a>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <section>
+        <h2 class="text-2xl font-bold text-[#6700A3] mb-4">Daftar Tugas</h2>
+
+        <!-- Toggle -->
+        <div class="flex justify-center mb-4 gap-4">
+          <a
+            th:href="@{/tugas(selesai=false)}"
+            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold text-gray-700"
+            th:classappend="${!selesai} ? 'bg-[#6700A3] text-white' : ''"
+          >
+            Pending
+          </a>
+          <a
+            th:href="@{/tugas(selesai=true)}"
+            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold text-gray-700"
+            th:classappend="${selesai} ? 'bg-[#6700A3] text-white' : ''"
+          >
+            Complete
+          </a>
+        </div>
+
+        <!-- Tampilkan jika tidak ada task pending maupun overdue -->
+        <div
+          th:if="${!selesai} and ${#lists.isEmpty(pendingTasks)} and ${#lists.isEmpty(overdueTasks)}"
+          class="text-center text-gray-500 py-8"
+        >
+          <p>Tidak ada tugas yang harus dikerjakan 🎉</p>
+        </div>
+
+        <!-- Overdue Section -->
+        <div th:if="${!#lists.isEmpty(overdueTasks)}" class="mb-4">
+          <h4 class="text-red-600 font-bold mb-2">⚠ Overdue</h4>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div
+              th:each="task : ${overdueTasks}"
+              class="bg-white p-4 rounded shadow flex items-center gap-4"
+            >
+              <!-- Selesai -->
+              <form
+                th:action="@{/tugas/selesai/{id}(id=${task.id})}"
+                method="post"
+              >
+                <input type="hidden" name="redirectPage" value="tugas" />
+                <button
+                  type="submit"
+                  class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                >
+                  Selesai
+                </button>
+              </form>
+              <!-- Info -->
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-800" th:text="${task.judul}">
+                  Judul
+                </h4>
+                <p class="text-sm text-gray-500">
+                  Deadline:
+                  <span
+                    th:text="${#temporals.format(task.tanggalDeadline, 'dd MMM yyyy')}"
+                  ></span>
+                  <span th:text="${task.waktuDeadline}"></span>
+                </p>
+              </div>
+              <!-- Edit -->
+              <a
+                th:href="|@{/tugas/edit/{id}(id=${task.id})}?redirectPage=tugas|"
+                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                >✎</a
+              >
+              <!-- Hapus -->
+              <form
+                th:action="@{/tugas/hapus/{id}(id=${task.id})}"
+                method="post"
+                onsubmit="return confirm('Yakin ingin menghapus task ini?');"
+              >
+                <input type="hidden" name="redirectPage" value="tugas" />
+                <button
+                  type="submit"
+                  class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                >
+                  🗑
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pending Tasks -->
+        <div th:if="${!#lists.isEmpty(pendingTasks)}" class="mb-4">
+          <h4 class="text-gray-700 font-bold mb-2">Tugas Mendatang</h4>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div
+              th:each="task : ${pendingTasks}"
+              class="bg-white p-4 rounded shadow flex items-center gap-4"
+            >
+              <!-- Selesai -->
+              <form
+                th:action="@{/tugas/selesai/{id}(id=${task.id})}"
+                method="post"
+              >
+                <input type="hidden" name="redirectPage" value="tugas" />
+                <button
+                  type="submit"
+                  class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                >
+                  Selesai
+                </button>
+              </form>
+              <!-- Info -->
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-800" th:text="${task.judul}">
+                  Judul
+                </h4>
+                <p class="text-sm text-gray-500">
+                  Deadline:
+                  <span
+                    th:text="${#temporals.format(task.tanggalDeadline, 'dd MMM yyyy')}"
+                  ></span>
+                  <span th:text="${task.waktuDeadline}"></span>
+                </p>
+              </div>
+              <!-- Edit -->
+              <a
+                th:href="|@{/tugas/edit/{id}(id=${task.id})}?redirectPage=tugas|"
+                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                >✎</a
+              >
+              <!-- Hapus -->
+              <form
+                th:action="@{/tugas/hapus/{id}(id=${task.id})}"
+                method="post"
+                onsubmit="return confirm('Yakin ingin menghapus task ini?');"
+              >
+                <input type="hidden" name="redirectPage" value="tugas" />
+                <button
+                  type="submit"
+                  class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                >
+                  🗑
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tampilkan jika tidak ada task selesai -->
+        <div
+          th:if="${selesai} and ${#lists.isEmpty(completedTasks)}"
+          class="text-center text-gray-500 py-8"
+        >
+          <p>Belum ada tugas yang selesai 🙌</p>
+        </div>
+
+        <!-- Completed Tasks -->
+        <div
+          th:if="${!#lists.isEmpty(completedTasks)}"
+          class="grid md:grid-cols-2 gap-4"
+        >
+          <div
+            th:each="task : ${completedTasks}"
+            class="bg-white p-4 rounded shadow flex items-center gap-4"
+          >
+            <!-- Kembalikan ke Pending -->
+            <form
+              th:action="@{/tugas/selesai/{id}(id=${task.id})}"
+              method="post"
+            >
+              <input type="hidden" name="redirectPage" value="tugas" />
+              <button
+                type="submit"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+              >
+                Pending
+              </button>
+            </form>
+            <div class="flex-1">
+              <h3
+                class="text-xl font-semibold text-gray-800"
+                th:text="${task.judul}"
+              >
+                Judul
+              </h3>
+              <p class="text-gray-500" th:text="${task.deskripsi}">Deskripsi</p>
+              <p class="text-sm text-gray-500">
+                Deadline:
+                <span
+                  th:text="${#temporals.format(task.tanggalDeadline, 'dd MMM yyyy')}"
+                ></span>
+                <span th:text="${task.waktuDeadline}"></span>
+              </p>
+              <p class="text-sm text-green-600 mt-2 font-semibold">
+                ✓ Tugas selesai
+              </p>
+            </div>
+            <!-- Edit -->
+            <a
+              th:href="|@{/tugas/edit/{id}(id=${task.id})}?redirectPage=tugas|"
+              class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              >✎</a
+            >
+            <!-- Hapus -->
+            <form
+              th:action="@{/tugas/hapus/{id}(id=${task.id})}"
+              method="post"
+              onsubmit="return confirm('Yakin ingin menghapus task ini?');"
+            >
+              <input type="hidden" name="redirectPage" value="tugas" />
+              <button
+                type="submit"
+                class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+              >
+                🗑
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
