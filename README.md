@@ -31,28 +31,28 @@ Website ini menggabungkan fitur **To-Do List** dan **Habit Tracker** agar penggu
 
 ## 🛠️ Fitur Utama
 
-- **CRUD (Create, Read, Update, Delete):**  
+- **CRUD (Create, Read, Update, Delete)**  
   Kelola data tugas, kebiasaan, dan progres pengguna.
 
-- **To-Do List:**  
+- **To-Do List**  
   Tambah, edit, hapus, dan tandai tugas harian.  
   Penjadwalan tugas berdasarkan tanggal dan prioritas.
 
-- **Habit Tracker:**  
+- **Habit Tracker**  
   Tambahkan kebiasaan harian, mingguan, atau bulanan.  
   Tandai aktivitas harian untuk membentuk konsistensi.
 
-- **Monitoring Progres:**  
+- **Monitoring Progres**  
   Visualisasi progres tugas dan kebiasaan.  
   Persentase pencapaian target.
 
-- **Statistik Produktivitas:**  
+- **Statistik Produktivitas**  
   Statistik mingguan dan bulanan dalam bentuk grafik batang atau pie chart.
 
-- **Notifikasi & Reminder (Opsional):**  
+- **Notifikasi & Reminder**  
   Pengingat tugas dan kebiasaan yang belum dilakukan.
 
-- **Manajemen Akun Pengguna (Opsional):**  
+- **Manajemen Akun Pengguna**  
   Registrasi, login, dan logout untuk menyimpan data personal.
 
 ---
@@ -60,10 +60,10 @@ Website ini menggabungkan fitur **To-Do List** dan **Habit Tracker** agar penggu
 ## 💻 Teknologi yang Digunakan
 
 - HTML, CSS, JavaScript  
-- (Opsional) React.js / Vue.js  
-- Node.js / PHP / Python (Flask/Django)  
-- MySQL / PostgreSQL / MongoDB  
-- Chart.js / ApexCharts untuk grafik
+- Tailwind CSS
+- Maven  
+- MySQL  
+- Java Framework Springboot
 
 ---
 
@@ -71,13 +71,13 @@ Website ini menggabungkan fitur **To-Do List** dan **Habit Tracker** agar penggu
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/username/todo-habit-tracker.git
+git clone https://github.com/fauzanashshidiq/habittracker.git
 
 # 2. Masuk ke direktori proyek
-cd todo-habit-tracker
+cd habbitracker
 
 # 3. Install dependencies
-npm install
+mvn clean install
 
 # 4. Jalankan aplikasi
-npm start
+mvn spring-boot:run
