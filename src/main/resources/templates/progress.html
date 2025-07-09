@@ -2,174 +2,246 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Progress</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progress | HabitTracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Style Kustom untuk Tampilan macOS */
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: #f5f5f7;
+      }
+      
+      .macos-window {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: white;
+      }
+      
+      .macos-titlebar {
+        height: 40px;
+        background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        border-bottom: 1px solid #d0d0d0;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        flex-shrink: 0;
+      }
+      
+      .macos-buttons { display: flex; gap: 8px; }
+      .macos-btn { width: 12px; height: 12px; border-radius: 50%; }
+      .macos-btn-close { background: #ff5f56; }
+      .macos-btn-minimize { background: #ffbd2e; }
+      .macos-btn-maximize { background: #27c93f; }
+      
+      .macos-sidebar { background: #f8f8f8; border-right: 1px solid #e5e5e5; }
+      .sidebar-item { padding: 8px 16px; border-radius: 6px; margin: 0 8px; transition: all 0.2s; }
+      .sidebar-item:hover { background: #e5e5e5; }
+      .sidebar-item.active { background: #ede9fe; color: #7c3aed; }
+      
+      .stat-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        padding: 1.25rem;
+        transition: all 0.2s;
+      }
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      
+      .add-button { background: #7c3aed; box-shadow: 0 2px 10px rgba(124, 58, 237, 0.2); }
+      .add-button:hover { background: #6d28d9; }
+      
+      .dropdown-menu { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); border: 1px solid rgba(0, 0, 0, 0.1); }
+      .dropdown-item { transition: all 0.2s; }
+      .dropdown-item:hover { background: #f5f5f7; }
+      
+      .scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+      .scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+      .scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
   </head>
-  <body class="bg-gray-100 flex">
-    <!-- Sidebar -->
-    <aside
-      class="bg-white w-64 min-h-screen shadow-xl px-6 py-4 space-y-6 fixed md:relative z-30"
-    >
-      <h2 class="text-xl font-bold text-[#6700A3] mb-4">Dashboard</h2>
-      <nav class="flex flex-col space-y-2">
-        <a
-          th:href="@{/home}"
-          class="text-gray-700 hover:text-[#E02F75] font-medium"
-          >Home</a
-        >
-        <a
-          th:href="@{/kebiasaan}"
-          class="text-gray-700 hover:text-[#E02F75] font-medium"
-          >Kebiasaan</a
-        >
-        <a
-          th:href="@{/tugas}"
-          class="text-gray-700 hover:text-[#E02F75] font-medium"
-          >Tugas</a
-        >
-        <a
-          th:href="@{/progress}"
-          class="text-gray-700 hover:text-[#E02F75] font-medium"
-          >Progress</a
-        >
-        <div class="mt-8 flex justify-center relative">
-          <button
-            onclick="document.getElementById('addMenu').classList.toggle('hidden')"
-            class="bg-[#6700A3] text-white px-5 py-3 rounded-full text-sm font-semibold shadow hover:bg-[#52007f] transition"
-          >
-            + Tambah
-          </button>
-          <div
-            id="addMenu"
-            class="absolute top-full mt-2 bg-white border border-gray-200 rounded shadow w-48 hidden z-50"
-          >
-            <a
-              href="/kebiasaan/tambah"
-              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >Tambah Kebiasaan</a
-            >
-            <a
-              href="/tugas/tambah"
-              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >Tambah Tugas</a
-            >
+  <body class="min-h-screen bg-gray-100 flex items-center justify-center p-4 md:p-8">
+    <div class="macos-window w-full max-w-6xl h-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="macos-titlebar">
+        <div class="macos-buttons">
+          <div class="macos-btn macos-btn-close"></div>
+          <div class="macos-btn macos-btn-minimize"></div>
+          <div class="macos-btn macos-btn-maximize"></div>
+        </div>
+        <div class="ml-2 text-sm text-gray-600 truncate">Progress & Statistik - HabitTracker</div>
+      </div>
+      
+      <div class="flex flex-1 overflow-hidden">
+        <aside class="macos-sidebar w-56 flex-shrink-0 flex flex-col p-4 hidden md:flex">
+          <div class="mb-4">
+            <h2 class="text-lg font-semibold text-gray-800 mb-1">HabitTracker</h2>
+            <p class="text-xs text-gray-500">Selamat Datang, <span class="text-purple-600 font-medium" th:text="${username}">User</span></p>
           </div>
-        </div>
-      </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 ml-0 p-6">
-      <header
-        class="bg-white shadow px-6 py-4 flex justify-between items-center mb-6"
-      >
-        <h1 class="text-xl font-bold text-[#6700A3]">Progress</h1>
-        <div class="space-x-4">
-          <span class="text-gray-600"
-            >Halo, <b th:text="${username}">User</b></span
-          >
-          <a href="/logout" class="text-red-500 hover:text-red-700">Logout</a>
-        </div>
-      </header>
-
-      <!-- Statistik Ringkasan -->
-      <section class="grid md:grid-cols-3 gap-6 mb-6">
-        <div class="bg-white p-5 rounded shadow">
-          <h3 class="text-gray-600 text-sm">Kebiasaan Minggu Ini</h3>
-          <p
-            class="text-2xl font-bold text-[#6700A3]"
-            th:text="${habitMingguan}"
-          >
-            0
-          </p>
-        </div>
-        <div class="bg-white p-5 rounded shadow">
-          <h3 class="text-gray-600 text-sm">Tugas Selesai</h3>
-          <p class="text-2xl font-bold text-[#6700A3]" th:text="${taskSelesai}">
-            0
-          </p>
-        </div>
-        <div class="bg-white p-5 rounded shadow">
-          <h3 class="text-gray-600 text-sm">Tugas Terlambat</h3>
-          <p class="text-2xl font-bold text-red-500" th:text="${taskTelat}">
-            0
-          </p>
-        </div>
-      </section>
-
-      <!-- Progress Bar Kebiasaan -->
-      <section class="bg-white p-6 rounded shadow mb-6">
-        <h2 class="text-lg font-semibold text-[#6700A3] mb-4">
-          Progress Kebiasaan
-        </h2>
-
-        <!-- Jika kosong -->
-        <div th:if="${#maps.isEmpty(habitProgress)}" class="text-gray-500">
-          Belum ada kebiasaan yang diselesaikan minggu ini.
-        </div>
-
-        <!-- Jika ada data -->
-        <div
-          th:each="entry : ${habitProgress}"
-          th:unless="${#maps.isEmpty(habitProgress)}"
-        >
-          <p
-            class="text-gray-700 mb-1"
-            th:text="${entry.key.nama + ' (' + entry.value + '/7)'}"
-          ></p>
-          <div class="w-full bg-gray-200 h-4 rounded">
-            <div
-              class="bg-green-500 h-4 rounded"
-              th:style="'width:' + (${entry.value} * 100 / 7) + '%'"
-            ></div>
+          
+          <nav class="flex-1 space-y-1">
+            <a th:href="@{/home}" class="sidebar-item flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+              <span>Home</span>
+            </a>
+            <a th:href="@{/kebiasaan}" class="sidebar-item flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clip-rule="evenodd" /></svg>
+              <span>Kebiasaan</span>
+            </a>
+            <a th:href="@{/tugas}" class="sidebar-item flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+              <span>Tugas</span>
+            </a>
+            <a th:href="@{/progress}" class="sidebar-item flex items-center space-x-2 active">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+              <span>Progress</span>
+            </a>
+          </nav>
+          
+          <div class="mt-auto pt-4 relative">
+            <button onclick="document.getElementById('addMenu').classList.toggle('hidden')" class="add-button text-white px-4 py-2 rounded-lg w-full flex items-center justify-center space-x-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+              <span>Tambah</span>
+            </button>
+            <div id="addMenu" class="dropdown-menu absolute bottom-full mb-2 left-0 right-0 bg-white rounded-lg p-1 hidden z-10">
+              <a href="/kebiasaan/tambah" class="dropdown-item block px-3 py-2 text-sm rounded-md">Tambah Kebiasaan</a>
+              <a href="/tugas/tambah" class="dropdown-item block px-3 py-2 text-sm rounded-md">Tambah Tugas</a>
+            </div>
           </div>
-        </div>
-      </section>
+          
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="flex items-center justify-end px-2">
+              <a href="/logout" class="text-sm text-red-500 hover:text-red-700">Logout</a>
+            </div>
+          </div>
+        </aside>
 
-      <!-- Grafik Statistik -->
-      <section class="bg-white p-6 rounded shadow">
-        <h2 class="text-lg font-semibold text-[#6700A3] mb-4">Grafik Tugas</h2>
-        <canvas id="habitChart" width="400" height="200"></canvas>
-      </section>
-    </main>
+        <main class="flex-1 p-6 overflow-y-auto scrollbar bg-white">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Progress & Statistik</h2>
+            
+            <section class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="stat-card">
+                  <h3 class="font-medium text-gray-500">Kebiasaan Minggu Ini</h3>
+                  <p class="text-3xl font-bold text-purple-600 mt-1" th:text="${habitMingguan}">0</p>
+                </div>
+                <div class="stat-card">
+                  <h3 class="font-medium text-gray-500">Total Tugas Selesai</h3>
+                  <p class="text-3xl font-bold text-green-600 mt-1" th:text="${taskSelesai}">0</p>
+                </div>
+                <div class="stat-card">
+                  <h3 class="font-medium text-gray-500">Total Tugas Terlambat</h3>
+                  <p class="text-3xl font-bold text-red-600 mt-1" th:text="${taskTelat}">0</p>
+                </div>
+            </section>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div class="lg:col-span-3 flex flex-col gap-6">
+                    <section class="stat-card">
+                      <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                        Progress Kebiasaan Mingguan
+                      </h2>
+                      <div th:if="${#maps.isEmpty(habitProgress)}" class="text-center text-gray-500 py-6">
+                        <p>Belum ada kemajuan kebiasaan minggu ini.</p>
+                      </div>
+                      <div class="space-y-4" th:unless="${#maps.isEmpty(habitProgress)}">
+                        <div th:each="entry : ${habitProgress}">
+                          <div class="flex justify-between items-end mb-1">
+                            <p class="text-gray-700 font-medium" th:text="${entry.key.nama}"></p>
+                            <p class="text-sm text-gray-500" th:text="'Selesai ' + ${entry.value} + ' dari 7 hari'"></p>
+                          </div>
+                          <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-purple-600 h-2.5 rounded-full" th:style="'width:' + (${entry.value} * 100 / 7) + '%'"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                </div>
 
-    <!-- Chart.js Script -->
+                <div class="lg:col-span-2 flex flex-col gap-6">
+                    <section class="stat-card h-full">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Grafik Tugas Selesai (7 Hari Terakhir)</h2>
+                        <div class="relative h-64">
+                            <canvas id="taskChart"></canvas>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+      </div>
+    </div>
+
     <script th:inline="javascript">
-      const habitCtx = document.getElementById("habitChart").getContext("2d");
+      document.addEventListener('DOMContentLoaded', function () {
+        const taskCtx = document.getElementById('taskChart');
+        if (taskCtx) {
+          const labels = /*[[${labels}]]*/ [];
+          const data = /*[[${taskPerDay.values()}]]*/ [];
 
-      const labels = /*[[${labels}]]*/ [];
-      const data = /*[[${taskPerDay.values()}]]*/ [];
-
-      new Chart(habitCtx, {
-        type: "bar",
-        data: {
-          labels: labels.map((d) => {
-            const date = new Date(d);
-            const hari = date.toLocaleDateString("id-ID", { weekday: "short" });
-            const tanggal = date.toLocaleDateString("id-ID", {
-              day: "2-digit",
-              month: "2-digit",
-            });
-            return `${hari} (${tanggal})`;
-          }),
-          datasets: [
-            {
-              label: "Tugas Diselesaikan",
-              data: data,
-              backgroundColor: "#6700A3",
+          new Chart(taskCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: labels.map(d => {
+                const date = new Date(d);
+                // Format menjadi "Sen, 01/07"
+                return date.toLocaleDateString('id-ID', { weekday: 'short' });
+              }),
+              datasets: [{
+                label: 'Tugas Diselesaikan',
+                data: data,
+                backgroundColor: '#7c3aed',
+                borderColor: '#6d28d9',
+                borderWidth: 1,
+                borderRadius: 4,
+                barThickness: 15
+              }]
             },
-          ],
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1 },
-            },
-          },
-        },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  backgroundColor: '#1f2937',
+                  titleFont: { size: 14 },
+                  bodyFont: { size: 12 },
+                  padding: 10,
+                  cornerRadius: 6,
+                  displayColors: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    stepSize: 1,
+                    color: '#6b7280'
+                  },
+                  grid: {
+                    drawBorder: false,
+                  }
+                },
+                x: {
+                   ticks: {
+                    color: '#6b7280'
+                  },
+                  grid: {
+                    display: false
+                  }
+                }
+              }
+            }
+          });
+        }
       });
     </script>
   </body>

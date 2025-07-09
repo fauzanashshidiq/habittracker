@@ -2,207 +2,273 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Kebiasaan Selesai</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kebiasaan Selesai | HabitTracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Style Kustom untuk Tampilan macOS */
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: #f5f5f7;
+      }
+      
+      .macos-window {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: white;
+      }
+      
+      .macos-titlebar {
+        height: 40px;
+        background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        border-bottom: 1px solid #d0d0d0;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        flex-shrink: 0;
+      }
+      
+      .macos-buttons {
+        display: flex;
+        gap: 8px;
+      }
+      
+      .macos-btn {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      
+      .macos-btn-close {
+        background: #ff5f56;
+      }
+      
+      .macos-btn-minimize {
+        background: #ffbd2e;
+      }
+      
+      .macos-btn-maximize {
+        background: #27c93f;
+      }
+      
+      .macos-sidebar {
+        background: #f8f8f8;
+        border-right: 1px solid #e5e5e5;
+      }
+      
+      .sidebar-item {
+        padding: 8px 16px;
+        border-radius: 6px;
+        margin: 0 8px;
+        transition: all 0.2s;
+      }
+      
+      .sidebar-item:hover {
+        background: #e5e5e5;
+      }
+      
+      .sidebar-item.active {
+        background: #ede9fe;
+        color: #7c3aed;
+      }
+      
+      .habit-card {
+        transition: all 0.2s;
+        border: 1px solid #e5e5e5;
+      }
+      
+      .habit-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      
+      .btn-edit {
+        background: #a855f7;
+      }
+      
+      .btn-edit:hover {
+        background: #7c3aed;
+      }
+      
+      .btn-delete {
+        background: #ff3b30;
+      }
+      
+      .btn-delete:hover {
+        background: #c93400;
+      }
+      
+      .add-button {
+        background: #7c3aed;
+        box-shadow: 0 2px 10px rgba(124, 58, 237, 0.2);
+      }
+      
+      .add-button:hover {
+        background: #6d28d9;
+      }
+      
+      .dropdown-menu {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+      
+      .dropdown-item {
+        transition: all 0.2s;
+      }
+      
+      .dropdown-item:hover {
+        background: #f5f5f7;
+      }
+      
+      .scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      
+      .scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      
+      .scrollbar::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+      }
+      
+      .scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+    </style>
   </head>
-  <body class="bg-gray-100 flex">
-    <!-- Sidebar -->
-    <aside
-      class="bg-white w-64 min-h-screen shadow-xl px-6 py-4 space-y-6 fixed md:relative z-30 transition-transform duration-200 ease-in-out"
-      th:classappend="${sidebarOpen} ? 'translate-x-0 md:translate-x-0' : '-translate-x-full md:translate-x-0'"
-    >
-      <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-[#6700A3] mb-4">Dashboard</h2>
-        <button
-          class="md:hidden"
-          onclick="document.getElementById('sidebarOverlay').click()"
-        >
-          ✕
-        </button>
+  <body class="min-h-screen bg-gray-100 flex items-center justify-center p-4 md:p-8">
+    <div class="macos-window w-full max-w-6xl h-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="macos-titlebar">
+        <div class="macos-buttons">
+          <div class="macos-btn macos-btn-close"></div>
+          <div class="macos-btn macos-btn-minimize"></div>
+          <div class="macos-btn macos-btn-maximize"></div>
+        </div>
+        <div class="ml-2 text-sm text-gray-600 truncate">Kebiasaan Selesai - HabitTracker</div>
       </div>
-      <nav class="flex flex-col space-y-2">
-        <a
-          th:href="@{/home}"
-          class="text-gray-700 hover:text-[#E02F75] font-medium"
-          >Home</a
-        >
-        <a
-          th:href="@{/kebiasaan}"
-          class="text-gray-700 hover:text-[#E02F75] font-medium"
-          >Kebiasaan</a
-        >
-        <a
-          th:href="@{/tugas}"
-          class="text-gray-700 hover:text-[#E02F75] font-medium"
-          >Tugas</a
-        >
-        <a
-          th:href="@{/progress}"
-          class="text-gray-700 hover:text-[#E02F75] font-medium"
-          >Progress</a
-        >
-        <div class="mt-8 flex justify-center relative">
-          <button
-            onclick="document.getElementById('addMenu').classList.toggle('hidden')"
-            class="bg-[#6700A3] text-white px-5 py-3 rounded-full text-sm font-semibold shadow hover:bg-[#52007f] transition"
-          >
-            + Tambah
-          </button>
-          <div
-            id="addMenu"
-            class="absolute top-full mt-2 bg-white border border-gray-200 rounded shadow w-48 hidden z-50"
-          >
-            <a
-              href="/kebiasaan/tambah"
-              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >Tambah Kebiasaan</a
-            >
-            <a
-              href="/tugas/tambah"
-              class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >Tambah Tugas</a
-            >
+      
+      <div class="flex flex-1 overflow-hidden">
+        <aside class="macos-sidebar w-56 flex-shrink-0 flex flex-col p-4 hidden md:flex">
+          <div class="mb-4">
+            <h2 class="text-lg font-semibold text-gray-800 mb-1">HabitTracker</h2>
+            <p class="text-xs text-gray-500">Selamat Datang, <span class="text-purple-600 font-medium" th:text="${username}">User</span></p>
           </div>
-        </div>
-      </nav>
-    </aside>
-
-    <!-- Overlay -->
-    <div
-      id="sidebarOverlay"
-      class="fixed inset-0 bg-black bg-opacity-40 z-20 md:hidden hidden"
-      onclick="document.querySelector('aside').classList.add('-translate-x-full'); this.classList.add('hidden')"
-    ></div>
-
-    <!-- Main Content -->
-    <main class="flex-1 ml-0 p-6">
-      <!-- Top Navbar -->
-      <header
-        class="bg-white shadow px-6 py-4 flex justify-between items-center mb-6"
-      >
-        <button
-          class="md:hidden text-gray-700"
-          onclick="document.querySelector('aside').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden')"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-6 h-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-        <h1 class="text-xl font-bold text-[#6700A3]">HabitTracker</h1>
-        <div class="space-x-4">
-          <span class="text-gray-600"
-            >Halo, <b th:text="${username}">User</b></span
-          >
-          <a href="/logout" class="text-red-500 hover:text-red-700">Logout</a>
-        </div>
-      </header>
-
-      <!-- Content -->
-      <section>
-        <h2 class="text-2xl font-bold text-[#6700A3] mb-4">
-          Kebiasaan yang Telah Diselesaikan
-        </h2>
-
-        <div th:if="${#lists.isEmpty(habits)}" class="text-gray-500">
-          Belum ada kebiasaan yang diselesaikan.
-        </div>
-
-        <div
-          class="grid md:grid-cols-2 gap-4"
-          th:if="${!#lists.isEmpty(habits)}"
-        >
-          <div
-            th:each="habit : ${habits}"
-            class="bg-white p-4 rounded shadow relative"
-          >
-            <!-- Nama & Frekuensi -->
-            <h3
-              class="text-xl font-semibold text-gray-800"
-              th:text="${habit.nama}"
-            >
-              Nama Kebiasaan
-            </h3>
-            <p class="text-gray-500">
-              <span th:switch="${habit.frekuensi}">
-                <span th:case="'Harian'">Frekuensi: Harian</span>
-                <span th:case="'Mingguan'">
-                  Frekuensi: Mingguan - Sisa
-                  <span th:text="${sisaMingguan[habit.id]}">0</span> hari
-                </span>
-                <span th:case="'Bulanan'">
-                  Frekuensi: Bulanan - Sisa
-                  <span th:text="${sisaBulanan[habit.id]}">0</span> hari
-                </span>
-                <span th:case="*"
-                  >Frekuensi: <span th:text="${habit.frekuensi}"></span
-                ></span>
-              </span>
-            </p>
-
-            <!-- Tanggal Diselesaikan -->
-            <div class="mt-2">
-              <h4 class="text-sm font-semibold text-gray-600">
-                Tanggal Diselesaikan:
-              </h4>
-              <ul class="list-disc list-inside text-sm text-gray-500">
-                <li
-                  th:each="completion : ${habit.completions}"
-                  th:text="${completion.tanggalSelesaiFormatted}"
-                ></li>
-              </ul>
-            </div>
-
-            <!-- Edit & Hapus -->
-            <div class="absolute top-4 right-4 flex gap-2">
-              <a
-                th:href="@{'/kebiasaan/edit/' + ${habit.id} + '?redirectPage=kebiasaan'}"
-                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-              >
-                ✎
-              </a>
-
-              <form
-                th:action="@{/kebiasaan/hapus/{id}(id=${habit.id})}"
-                method="post"
-                onsubmit="return confirm('Yakin ingin menghapus kebiasaan ini?');"
-              >
-                <input
-                  type="hidden"
-                  name="redirectPage"
-                  th:value="${redirectPage}"
-                />
-                <input
-                  type="hidden"
-                  name="date"
-                  th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
-                />
-                <input
-                  type="hidden"
-                  name="start"
-                  th:value="${habit.tanggalMulai} != null ? ${#temporals.format(habit.tanggalMulai, 'yyyy-MM-dd')} : ''"
-                />
-                <button
-                  type="submit"
-                  class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                >
-                  🗑
-                </button>
-              </form>
+          
+          <nav class="flex-1 space-y-1">
+            <a th:href="@{/home}" class="sidebar-item flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+              <span>Home</span>
+            </a>
+            <a th:href="@{/kebiasaan}" class="sidebar-item flex items-center space-x-2 active">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clip-rule="evenodd" /></svg>
+              <span>Kebiasaan</span>
+            </a>
+            <a th:href="@{/tugas}" class="sidebar-item flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+              <span>Tugas</span>
+            </a>
+            <a th:href="@{/progress}" class="sidebar-item flex items-center space-x-2">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+              <span>Progress</span>
+            </a>
+          </nav>
+          
+          <div class="mt-auto pt-4 relative">
+            <button onclick="document.getElementById('addMenu').classList.toggle('hidden')" class="add-button text-white px-4 py-2 rounded-lg w-full flex items-center justify-center space-x-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+              <span>Tambah</span>
+            </button>
+            
+            <div id="addMenu" class="dropdown-menu absolute bottom-full mb-2 left-0 right-0 bg-white rounded-lg p-1 hidden z-10">
+              <a href="/kebiasaan/tambah" class="dropdown-item block px-3 py-2 text-sm rounded-md">Tambah Kebiasaan</a>
+              <a href="/tugas/tambah" class="dropdown-item block px-3 py-2 text-sm rounded-md">Tambah Tugas</a>
             </div>
           </div>
-        </div>
-      </section>
-    </main>
+          
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="flex items-center justify-end px-2">
+              <a href="/logout" class="text-sm text-red-500 hover:text-red-700">Logout</a>
+            </div>
+          </div>
+        </aside>
+
+        <main class="flex-1 p-6 overflow-y-auto scrollbar">
+          <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+              Kebiasaan yang Telah Diselesaikan
+            </h2>
+            
+            <div th:if="${#lists.isEmpty(habits)}" class="bg-white rounded-lg p-8 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h4 class="mt-2 text-lg text-gray-600">Belum Ada Kebiasaan Selesai</h4>
+                <p class="text-sm text-gray-500 mt-1">Selesaikan kebiasaan di halaman Home untuk melihatnya di sini.</p>
+                <a th:href="@{/home}" class="inline-block mt-4 px-4 py-2 bg-[#7c3aed] text-white rounded-lg text-sm hover:bg-[#6d28d9]">Kembali ke Home</a>
+              </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5" th:if="${!#lists.isEmpty(habits)}">
+              
+              <div th:each="habit : ${habits}" class="habit-card bg-white rounded-lg p-4 flex flex-col">
+                <div class="flex-grow">
+                  <h3 class="text-lg font-semibold text-gray-800" th:text="${habit.nama}">
+                    Nama Kebiasaan
+                  </h3>
+                  <p class="text-sm text-gray-500 mb-3">
+                    <span th:switch="${habit.frekuensi}">
+                      <span th:case="'Harian'">Frekuensi: Harian</span>
+                      <span th:case="'Mingguan'">Frekuensi: Mingguan - Sisa <span th:text="${sisaMingguan[habit.id]}">0</span> hari</span>
+                      <span th:case="'Bulanan'">Frekuensi: Bulanan - Sisa <span th:text="${sisaBulanan[habit.id]}">0</span> hari</span>
+                      <span th:case="*">Frekuensi: <span th:text="${habit.frekuensi}"></span></span>
+                    </span>
+                  </p>
+                  
+                  <div>
+                    <h4 class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+                      Riwayat Penyelesaian
+                    </h4>
+                    <ul class="list-disc list-inside text-sm text-gray-500 space-y-1 max-h-32 overflow-y-auto scrollbar pr-2">
+                      <li th:each="completion : ${habit.completions}" th:text="${completion.tanggalSelesaiFormatted}"></li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-2">
+                  <a th:href="@{'/kebiasaan/edit/' + ${habit.id} + '?redirectPage=kebiasaan'}" 
+                     class="btn-edit w-9 h-9 rounded-full flex items-center justify-center text-white"
+                     title="Edit Kebiasaan">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </a>
+                  
+                  <form th:action="@{/kebiasaan/hapus/{id}(id=${habit.id})}" method="post" onsubmit="return confirm('Yakin ingin menghapus kebiasaan ini secara permanen?');">
+                    <input type="hidden" name="redirectPage" th:value="${redirectPage}" />
+                    <input type="hidden" name="date" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" />
+                    <input type="hidden" name="start" th:value="${habit.tanggalMulai} != null ? ${#temporals.format(habit.tanggalMulai, 'yyyy-MM-dd')} : ''" />
+                    <button type="submit" 
+                            class="btn-delete w-9 h-9 rounded-full flex items-center justify-center text-white"
+                            title="Hapus Kebiasaan">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+              
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
   </body>
 </html>
